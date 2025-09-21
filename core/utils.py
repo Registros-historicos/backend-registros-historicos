@@ -1,0 +1,1 @@
+# Aqui se colocaran funciones comunes a todo el proyecto
