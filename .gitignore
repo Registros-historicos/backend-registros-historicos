@@ -42,7 +42,6 @@ static/
 
 # Environments
 .env
-.env.*
 
 # mypy
 .mypy_cache/
