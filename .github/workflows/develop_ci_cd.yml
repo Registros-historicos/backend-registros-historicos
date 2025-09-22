@@ -1,0 +1,33 @@
+name: develop, Structure Check
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - "apps/**"
+      - ".github/workflows/develop_ci_cd.yml"
+      - "scripts/check_structure.py"
+
+  pull_request:
+    branches: [ develop ]
+    paths:
+      - "apps/**"
+      - "scripts/check_structure.py"
+      - ".github/workflows/develop_ci_cd.yml"
+
+jobs:
+  structure-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run structure check
+        run: |
+          python -V
+          python scripts/check_structure.py
