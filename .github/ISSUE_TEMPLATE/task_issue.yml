@@ -1,0 +1,107 @@
+name: 📌 Dev Task
+description: "Plantilla para asignación de tareas de desarrollo"
+title: "[TASK]: <Título breve de la tarea>"
+labels: ["Task", "needs-triage"]
+assignees: [] #
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🧩 Task de Desarrollo
+        Se debe llenar esta plantilla para asignar la tarea a un desarrollador.
+        > Usa formato **TAREA / EVIDENCIA / PRUEBAS** y agrega toda la información necesaria para que el dev pueda comenzar sin bloqueos.
+
+  - id: resumen
+    type: input
+    attributes:
+      label: Resumen breve
+      description: Título corto y claro
+      placeholder: "Ej.: Diagrama de base de datos multi-tenant"
+    validations:
+      required: true
+
+  - id: tarea
+    type: textarea
+    attributes:
+      label: 📝 TAREA
+      description: Explica qué se debe realizar
+      placeholder: |
+        Desarrollar el módulo de login con JWT y refresh tokens.
+        Consideraciones: validación de email, password hashing con bcrypt, unit tests.
+    validations:
+      required: true
+
+  - id: tablas_previstas
+    type: textarea
+    attributes:
+      label: Tablas o componentes implicados
+      description: Si aplica (por ejemplo en DB o microservicio)
+      placeholder: |
+        - company
+        - user
+        - product
+        - order
+
+  - id: criterios
+    type: textarea
+    attributes:
+      label: ✅ Criterios de aceptación (Definition of Done)
+      description: Qué condiciones deben cumplirse para cerrar la tarea
+      placeholder: |
+        - API probada en Postman y retornando 200 OK.
+        - Tests unitarios > 80% coverage.
+        - Diagrama actualizado en la wiki.
+    validations:
+      required: true
+
+  - id: evidencia
+    type: textarea
+    attributes:
+      label: 📎 EVIDENCIA
+      description: Qué debe adjuntar el dev al cerrar el issue
+      placeholder: "Captura de pantalla, enlace a PR, enlace a diagrama (dbdiagram.io), etc."
+
+  - id: pruebas
+    type: textarea
+    attributes:
+      label: 🧪 PRUEBAS
+      description: Cómo validar la implementación
+      placeholder: "Test cases manuales, link a colección de Postman, datos de prueba."
+
+  - id: prioridad
+    type: dropdown
+    attributes:
+      label: Prioridad
+      options:
+        - P0 (Crítica)
+        - P1 (Alta)
+        - P2 (Media)
+        - P3 (Baja)
+      default: 2
+    validations:
+      required: true
+
+  - id: status
+    type: dropdown
+    attributes:
+      label: Estado inicial
+      options:
+        - Todo
+        - Doing
+        - Blocked
+        - Done
+      default: 0
+    validations:
+      required: true
+
+  - id: checklist
+    type: checkboxes
+    attributes:
+      label: Checklist operativo
+      options:
+        - label: Crear rama siguiendo convención `feature/<slug-tarea>`
+        - label: Subir cambios y abrir PR vinculado a este issue
+        - label: Actualizar status en el Project
+        - label: Adjuntar evidencia en este issue antes de cerrar
+        - label: Mover este issue a Done al cerrar
