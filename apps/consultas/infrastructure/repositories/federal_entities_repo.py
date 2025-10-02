@@ -15,4 +15,3 @@ def get_top10_entidades() -> List[Dict]:
         cols = [c[0] for c in cursor.description]
         rows = cursor.fetchall()
     return [dict(zip(cols, r)) for r in rows]
-
