@@ -39,3 +39,7 @@ class EntidadTopSerializer(serializers.Serializer):
     ent_federativa_param = serializers.IntegerField()
     entidad_nombre = serializers.CharField()
     total = serializers.IntegerField()
+
+class StatusCountSerializer(serializers.Serializer):
+    estatus = serializers.CharField()
+    total = serializers.IntegerField()
