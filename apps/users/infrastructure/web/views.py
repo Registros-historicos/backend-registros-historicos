@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
+from apps.users.application.selectors.federal_entities_top10_queries import entidades_top10
 from apps.users.infrastructure.repositories.user_repo import PgUserRepository
 from apps.users.application.selectors.user_queries import UserQueriesSelector
 from apps.users.application.services.user_comands import UserCommandsService
@@ -10,6 +11,7 @@ from apps.users.infrastructure.web.serializer import (
     UsuarioCreateSerializer,
     UsuarioUpdateSerializer,
     UsuarioResponseSerializer,
+    EntidadTopSerializer
 )
 from rest_framework.permissions import AllowAny
 
@@ -117,4 +119,13 @@ class UsuarioViewSet(viewsets.ViewSet):
     def me(self, request):
         """Endpoint de ejemplo para representar el usuario autenticado."""
         return Response({"ok": True}, status=status.HTTP_200_OK)
- 
+
+    @extend_schema(
+        summary="Top 10 entidades federativas por número de registros",
+        responses={200: EntidadTopSerializer(many=True)},
+    )
+
+    @action(detail=False, methods=["get"])
+    def entidades_top10_view(self, request):
+        resultado = entidades_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
