@@ -42,4 +42,6 @@ class EntidadTopSerializer(serializers.Serializer):
 
 class StatusCountSerializer(serializers.Serializer):
     estatus = serializers.CharField()
+class CategoriaInvestigadorSerializer(serializers.Serializer):
+    categoria = serializers.CharField()
     total = serializers.IntegerField()
