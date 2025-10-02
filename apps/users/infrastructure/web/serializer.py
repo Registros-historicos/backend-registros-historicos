@@ -34,14 +34,3 @@ class UsuarioResponseSerializer(serializers.Serializer):
     estatus = serializers.IntegerField()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
-
-class EntidadTopSerializer(serializers.Serializer):
-    ent_federativa_param = serializers.IntegerField()
-    entidad_nombre = serializers.CharField()
-    total = serializers.IntegerField()
-
-class StatusCountSerializer(serializers.Serializer):
-    estatus = serializers.CharField()
-class CategoriaInvestigadorSerializer(serializers.Serializer):
-    categoria = serializers.CharField()
-    total = serializers.IntegerField()

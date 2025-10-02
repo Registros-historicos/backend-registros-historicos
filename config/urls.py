@@ -23,9 +23,12 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 urlpatterns = [
     path("admin/", admin.site.urls),
 
+    # Documentación
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
-    path("api/", include("apps.users.infrastructure.web.urls")),
+    # Namespaces separados
+    path("api/users/", include(("apps.users.infrastructure.web.urls", "users"), namespace="users")),
+    path("api/consultas/", include(("apps.consultas.infrastructure.web.urls", "consultas"), namespace="consultas")),
 ]
