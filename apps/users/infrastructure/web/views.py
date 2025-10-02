@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from apps.users.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.users.application.selectors.federal_entities_top10_queries import entidades_top10
+from apps.users.application.selectors.records_by_status import conteo_registros_por_estatus_selector
 from apps.users.infrastructure.repositories.user_repo import PgUserRepository
 from apps.users.application.selectors.user_queries import UserQueriesSelector
 from apps.users.application.services.user_comands import UserCommandsService
@@ -132,6 +133,13 @@ class UsuarioViewSet(viewsets.ViewSet):
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
+        summary="Mostrar registros agrupados por estatus (Confirmada, Pendiente, Rechazada)",
+        responses={200: EntidadTopSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def records_by_status_view(self, request):
+        resultado = conteo_registros_por_estatus_selector()
+        return Response(resultado, status=status.HTTP_200_OK)
         summary="registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
         responses={200: EntidadTopSerializer(many=True)},
     )
