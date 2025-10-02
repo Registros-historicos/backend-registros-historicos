@@ -2,7 +2,7 @@ name: 📌 Dev Task
 description: "Plantilla para asignación de tareas de desarrollo"
 title: "[TASK]: <Título breve de la tarea>"
 labels: ["Task", "needs-triage"]
-assignees: [] #
+assignees: [""] 
 
 body:
   - type: markdown
@@ -100,7 +100,7 @@ body:
     attributes:
       label: Checklist operativo
       options:
-        - label: Crear rama siguiendo convención `feature/<slug-tarea>`
+        - label: Crear rama siguiendo convención `<tipo-tarea>/<slug-tarea>`
         - label: Subir cambios y abrir PR vinculado a este issue
         - label: Actualizar status en el Project
         - label: Adjuntar evidencia en este issue antes de cerrar

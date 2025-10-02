@@ -11,8 +11,7 @@
 
 ## Estructura de las aplicaciones
 
-Para cada modulo/funcionalidad, deberan crear su app usando el comando:
-
+Para cada **módulo de negocio o entidad independiente** (ej. Instituciones, Registros, Investigadores), deberán crear su app usando el comando:
 ```bash
     python manage.py startapp <nombre_app>
 ```
