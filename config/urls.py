@@ -29,6 +29,6 @@ urlpatterns = [
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 
     # Namespaces separados
-    path("api/users/", include(("apps.users.infrastructure.web.urls", "users"), namespace="users")),
-    path("api/consultas/", include(("apps.consultas.infrastructure.web.urls", "consultas"), namespace="consultas")),
+    path("api/usuarios/", include(("apps.users.infrastructure.web.urls", "usuarios"), namespace="usuarios")),
+    path("api/tableros/", include(("apps.consultas.infrastructure.web.urls", "tableros"), namespace="tableros")),
 ]

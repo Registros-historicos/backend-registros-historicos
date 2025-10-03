@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY requirements/prod.txt ./requirements/prod.txt
+COPY requirements/base.txt ./requirements/base.txt 
 RUN pip install --upgrade pip \
- && pip wheel --wheel-dir=/wheels -r requirements/prod.txt
+ && pip wheel --wheel-dir=/wheels -r requirements/base.txt
 
 # RUN pip wheel --wheel-dir=/wheels gunicorn>=21.2
 
