@@ -2,9 +2,9 @@ name: CI/CD VM Docker
 
 on:
   push:
-    branches: [ master, release, develop ]
+    branches: [ master, release ]
   pull_request:
-    branches: [ master, release, develop ]
+    branches: [ master, release ]
 
 # Necesario para publicar en GHCR con GITHUB_TOKEN
 permissions:
