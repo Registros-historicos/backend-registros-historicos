@@ -3,9 +3,10 @@ from rest_framework.routers import DefaultRouter
 from .views import UsuarioViewSet
 
 router = DefaultRouter()
-router.register(r'users', UsuarioViewSet, basename='usuario')
+router.register(r'', UsuarioViewSet, basename='usuarios')
+
 
 
 urlpatterns = [
-    path('users/', include(router.urls))
+    path("", include(router.urls)),
 ]
