@@ -11,6 +11,7 @@ urlpatterns = [
     path('tableros/entidades/top10/', ConsultaViewSet.as_view({'get': 'entidades_top10_view'}), name='entidades-top10'),
     path('tableros/registros/estatus/', ConsultaViewSet.as_view({'get': 'records_by_status_view'}), name='registros-por-estatus'),
     path('tableros/investigadores/categorias/', ConsultaViewSet.as_view({'get': 'categoria_investigadores_view'}), name='categoria-investigadores'),
+    path('tableros/instituciones/top10/', ConsultaViewSet.as_view({'get': 'instituciones_top10_view'}), name='instituciones-top10'),
 
     
     path("", include(router.urls)),
