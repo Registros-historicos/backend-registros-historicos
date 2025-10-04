@@ -7,11 +7,13 @@ from apps.consultas.application.selectors.institutions_top10_queries import inst
 from apps.consultas.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.consultas.application.selectors.federal_entities_top10_queries import entidades_top10
 from apps.consultas.application.selectors.records_by_status import conteo_registros_por_estatus_selector
+from apps.consultas.application.selectors.records_by_sex_queries import registros_por_sexo_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
     CategoriaInvestigadorSerializer,
     InstitucionTopSerializer,
+    RegistrosPorSexoSerializer,
 )
 from rest_framework.permissions import AllowAny
 
@@ -60,4 +62,13 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def instituciones_top10_view(self, request):
         resultado = instituciones_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        summary="Conteo de registros por sexo de investigador",
+        responses={200: RegistrosPorSexoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_sexo_view(self, request):
+        resultado = registros_por_sexo_selector()
         return Response(resultado, status=status.HTTP_200_OK)
