@@ -7,12 +7,14 @@ from apps.consultas.application.selectors.institutions_top10_queries import inst
 from apps.consultas.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.consultas.application.selectors.federal_entities_top10_queries import entidades_top10
 from apps.consultas.application.selectors.records_by_status import conteo_registros_por_estatus_selector
+from apps.consultas.application.selectors.economic_sectors_queries import conteo_registros_por_sector_selector
 from apps.consultas.application.selectors.records_by_sex_queries import registros_por_sexo_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
     CategoriaInvestigadorSerializer,
     InstitucionTopSerializer,
+    SectorEconomicoSerializer,
     RegistrosPorSexoSerializer,
 )
 from rest_framework.permissions import AllowAny
@@ -65,6 +67,12 @@ class ConsultaViewSet(viewsets.ViewSet):
         return Response(resultado, status=status.HTTP_200_OK)
     
     @extend_schema(
+        summary="Registros agrupados por sector económico",
+        responses={200: SectorEconomicoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_sector_view(self, request):
+        resultado = conteo_registros_por_sector_selector()
         summary="Conteo de registros por sexo de investigador",
         responses={200: RegistrosPorSexoSerializer(many=True)},
     )
