@@ -13,12 +13,11 @@ class CategoriaInvestigadorSerializer(serializers.Serializer):
     categoria = serializers.CharField()
     total = serializers.IntegerField()
 
-class RequestTypeSerializer(serializers.Serializer):
-    type = serializers.CharField()
-    total = serializers.IntegerField()
-
-
 class InstitucionTopSerializer(serializers.Serializer):
     id_institucion = serializers.IntegerField()
     institucion_nombre = serializers.CharField()
+    total = serializers.IntegerField()
+
+class RequestTypeSerializer(serializers.Serializer):
+    type = serializers.CharField()
     total = serializers.IntegerField()
