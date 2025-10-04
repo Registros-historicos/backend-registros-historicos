@@ -73,6 +73,10 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def registros_por_sector_view(self, request):
         resultado = conteo_registros_por_sector_selector()
+        return Response(resultado, status=status.HTTP_200_OK)
+
+        
+    @extend_schema(
         summary="Conteo de registros por sexo de investigador",
         responses={200: RegistrosPorSexoSerializer(many=True)},
     )
