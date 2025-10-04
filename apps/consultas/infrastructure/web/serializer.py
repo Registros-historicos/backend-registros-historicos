@@ -12,3 +12,7 @@ class StatusCountSerializer(serializers.Serializer):
 class CategoriaInvestigadorSerializer(serializers.Serializer):
     categoria = serializers.CharField()
     total = serializers.IntegerField()
+
+class RequestTypeSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    total = serializers.IntegerField()
