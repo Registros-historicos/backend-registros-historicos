@@ -16,25 +16,6 @@ def get_requests_by_type(institucion: str) -> List[Dict]:
                 f.total
             FROM f_cuenta_registros_por_tipo_registro() f
             JOIN parametrizacion AS p ON f.tipo_registro_param = p.id_param
-            WHERE
-                p.nombre IN (
-                    'Audiovisual',
-                    'Aviso Comercial',
-                    'Copilación de datos (Base de datos)',
-                    'Diseño Industrial',
-                    'Dibujo',
-                    'ISBN',
-                    'ISSN',
-                    'Literaria',
-                    'LITERARIA (ARTE DIGITAL POR ANALOGÍA)',
-                    'Marca',
-                    'Modelo de Utilidad',
-                    'Patente',
-                    'Programa de computación',
-                    'Programa de computación (App por Analogía)',
-                    'Reserva de Derechos',
-                    'Trazado de Circuito'
-                )
             ORDER BY total DESC, p.nombre;
         """, [institucion.upper()])
 
