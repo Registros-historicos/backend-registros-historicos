@@ -17,3 +17,9 @@ class InstitucionTopSerializer(serializers.Serializer):
     id_institucion = serializers.IntegerField()
     institucion_nombre = serializers.CharField()
     total = serializers.IntegerField()
+
+class SectorEconomicoSerializer(serializers.Serializer):
+    sector = serializers.CharField()
+class RegistrosPorSexoSerializer(serializers.Serializer):
+    sexo = serializers.CharField()
+    total = serializers.IntegerField()
