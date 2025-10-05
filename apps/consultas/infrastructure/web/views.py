@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
+from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor
 from apps.consultas.application.selectors.institutions_top10_queries import instituciones_top10
 from apps.consultas.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.consultas.application.selectors.federal_entities_top10_queries import entidades_top10
@@ -16,6 +17,7 @@ from apps.consultas.infrastructure.web.serializer import (
     InstitucionTopSerializer,
     SectorEconomicoSerializer,
     RegistrosPorSexoSerializer,
+    RequestTypeSerializer
 )
 from rest_framework.permissions import AllowAny
 
@@ -65,7 +67,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     def instituciones_top10_view(self, request):
         resultado = instituciones_top10()
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
         summary="Registros agrupados por sector económico",
         responses={200: SectorEconomicoSerializer(many=True)},
@@ -75,7 +77,7 @@ class ConsultaViewSet(viewsets.ViewSet):
         resultado = conteo_registros_por_sector_selector()
         return Response(resultado, status=status.HTTP_200_OK)
 
-        
+
     @extend_schema(
         summary="Conteo de registros por sexo de investigador",
         responses={200: RegistrosPorSexoSerializer(many=True)},
@@ -84,3 +86,20 @@ class ConsultaViewSet(viewsets.ViewSet):
     def registros_por_sexo_view(self, request):
         resultado = registros_por_sexo_selector()
         return Response(resultado, status=status.HTTP_200_OK)
+    @extend_schema(
+        summary="Requests grouped by type (IMPI)",
+        responses={200: RequestTypeSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def requests_impi_view(self, request):
+        result = requests_impi()
+        return Response(result, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Requests grouped by type (INDAUTOR)",
+        responses={200: RequestTypeSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def requests_indautor_view(self, request):
+        result = requests_indautor()
+        return Response(result, status=status.HTTP_200_OK)

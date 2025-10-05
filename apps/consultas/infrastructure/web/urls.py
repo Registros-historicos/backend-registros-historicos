@@ -13,4 +13,9 @@ urlpatterns = [
     path('instituciones/top10/', ConsultaViewSet.as_view({'get': 'instituciones_top10_view'}), name='instituciones-top10'),
     path('sectores/', ConsultaViewSet.as_view({'get': 'registros_por_sector_view'}), name='registros-por-sector'),
     path('investigadores/sexo/', ConsultaViewSet.as_view({'get': 'registros_por_sexo_view'}), name='registros-por-sexo'),
+    path('solicitudes/impi/', ConsultaViewSet.as_view({'get': 'requests_impi_view'}), name='requests-impi'),
+    path('solicitudes/indautor/', ConsultaViewSet.as_view({'get': 'requests_indautor_view'}),
+         name='requests-indautor'),
+
+    path("", include(router.urls)),
 ]

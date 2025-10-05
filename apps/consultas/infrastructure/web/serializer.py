@@ -23,3 +23,7 @@ class SectorEconomicoSerializer(serializers.Serializer):
 class RegistrosPorSexoSerializer(serializers.Serializer):
     sexo = serializers.CharField()
     total = serializers.IntegerField()
+
+class RequestTypeSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    total = serializers.IntegerField()
