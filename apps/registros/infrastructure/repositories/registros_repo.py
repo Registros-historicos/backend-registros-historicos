@@ -1,3 +1,4 @@
+from typing import Optional
 from apps.registros.domain.entities import Registro
 from apps.registros.domain.ports import RegistroRepository
 from psycopg2.extensions import AsIs
@@ -116,3 +117,65 @@ class PostgresRegistroRepository(RegistroRepository):
             descripcion=row[13],
             tipo_sector_param=row[14],
         )
+
+    def listar_por_tipo(self, tipo_registro_param: int, limit: int, offset: int) -> list[dict]:
+        """ Lista registros por tipo con paginación """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM f_busca_registros_por_tipo(%s, %s, %s)
+            """, [tipo_registro_param, limit, offset])
+            columns = [col[0] for col in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+    def contar_por_tipo(self, tipo_registro_param: int) -> int:
+        """ Cuenta total de registros por tipo """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT f_cuenta_registros_por_tipo(%s)
+            """, [tipo_registro_param])
+            return cursor.fetchone()[0] or 0
+    
+    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int) -> list[dict]:
+        """ Busca registros por texto con paginación """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM f_busca_registros_por_texto(%s, %s, %s, %s)
+            """, [tipo_registro_param, texto, limit, offset])
+            columns = [col[0] for col in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    def contar_por_texto(self, tipo_registro_param: int, texto: str) -> int:
+        """ Cuenta registros que coinciden con el texto """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT f_contar_registros_por_texto(%s, %s)
+            """, [tipo_registro_param, texto])
+            return cursor.fetchone()[0] or 0
+        
+    def obtener_por_id(self, id_registro: int) -> Optional[dict]:
+        """ Obtiene un registro por su ID """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM f_busca_registro_por_pk(%s)
+            """, [id_registro])
+            row = cursor.fetchone()
+            if row:
+                columns = [col[0] for col in cursor.description]
+                return dict(zip(columns, row))
+            return None
+    
+    def obtener_por_expediente(self, no_expediente: str) -> Optional[dict]:
+        """ Obtiene un registro por número de expediente """
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM f_busca_registro_por_numero_de_expediente(%s)
+            """, [no_expediente])
+            row = cursor.fetchone()
+            if row:
+                columns = [col[0] for col in cursor.description]
+                return dict(zip(columns, row))
+            return None
