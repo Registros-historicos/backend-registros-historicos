@@ -16,3 +16,19 @@ class RegistroSerializer(serializers.Serializer):
     fec_solicitud = serializers.CharField()
     descripcion = serializers.CharField()
     tipo_sector_param = serializers.CharField()
+
+class RegistroListSerializer(serializers.Serializer):
+    id_registro = serializers.IntegerField()
+    no_expediente = serializers.CharField()
+    titulo = serializers.CharField()
+    tipo_ingreso_param = serializers.CharField()
+    rama_param = serializers.CharField()
+    estatus_param = serializers.CharField()
+    tipo_registro_param = serializers.CharField()
+    fec_solicitud = serializers.CharField()
+
+class PaginatedRegistroSerializer(serializers.Serializer):
+    total = serializers.IntegerField()
+    page = serializers.IntegerField()
+    limit = serializers.IntegerField()
+    results = RegistroListSerializer(many=True)
