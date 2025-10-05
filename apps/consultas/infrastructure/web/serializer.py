@@ -20,6 +20,8 @@ class InstitucionTopSerializer(serializers.Serializer):
 
 class SectorEconomicoSerializer(serializers.Serializer):
     sector = serializers.CharField()
+    total = serializers.IntegerField()
+    
 class RegistrosPorSexoSerializer(serializers.Serializer):
     sexo = serializers.CharField()
     total = serializers.IntegerField()
