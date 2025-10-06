@@ -10,6 +10,7 @@ from apps.consultas.application.selectors.federal_entities_top10_queries import 
 from apps.consultas.application.selectors.records_by_status import conteo_registros_por_estatus_selector
 from apps.consultas.application.selectors.economic_sectors_queries import conteo_registros_por_sector_selector
 from apps.consultas.application.selectors.records_by_sex_queries import registros_por_sexo_selector
+from apps.consultas.application.selectors.institutions_all_queries import instituciones_all
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -103,3 +104,12 @@ class ConsultaViewSet(viewsets.ViewSet):
     def requests_indautor_view(self, request):
         result = requests_indautor()
         return Response(result, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Todas las instituciones con número de registros",
+        responses={200: InstitucionTopSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def instituciones_all_view(self, request):
+        resultado = instituciones_all()
+        return Response(resultado, status=status.HTTP_200_OK)
