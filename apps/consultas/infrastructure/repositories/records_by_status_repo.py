@@ -17,9 +17,11 @@ class StatusRecordsRepository:
                 COALESCE(c.total, 0) AS total
             FROM parametrizacion AS p
             LEFT JOIN counts c
-              ON c.estatus_param = p.id_param
+            ON c.estatus_param = p.id_param
+            WHERE p.id_tema = 7   -- Tema 7 es estatus de solicitud
             ORDER BY total DESC, estatus ASC
         """
+
         with connection.cursor() as cursor:
             cursor.execute(query)
             cols = [c[0] for c in cursor.description]
