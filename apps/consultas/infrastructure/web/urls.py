@@ -16,6 +16,7 @@ urlpatterns = [
     path('solicitudes/impi/', ConsultaViewSet.as_view({'get': 'requests_impi_view'}), name='requests-impi'),
     path('solicitudes/indautor/', ConsultaViewSet.as_view({'get': 'requests_indautor_view'}), name='requests-indautor'),
     path('instituciones/all/', ConsultaViewSet.as_view({'get': 'instituciones_all_view'}), name='instituciones-all'),
+    path('entidades/all/', ConsultaViewSet.as_view({'get': 'entidades_all_view'}), name='entidades-all'),
 
 
 ]
