@@ -14,6 +14,7 @@ from apps.consultas.application.selectors.institutions_all_queries import instit
 from apps.consultas.application.selectors.federal_entities_all_queries import entidades_all
 from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
 from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
+from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -135,6 +136,16 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def sectores_actividad_view(self, request):
+        resultado = sectores_actividad_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        summary="Todos los registros agrupados por sector/actividad económica",
+        responses={200: SectorActividadSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def sectores_actividad_all_view(self, request):
+        resultado = sectores_actividad_all()
         """
         Endpoint para obtener el top 10 de sectores por actividad económica.
         """

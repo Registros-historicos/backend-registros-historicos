@@ -22,4 +22,5 @@ urlpatterns = [
 
 
 
+    path('sectores/actividad/all/', ConsultaViewSet.as_view({'get': 'sectores_actividad_all_view'}), name='sectores-actividad-all')
 ]
