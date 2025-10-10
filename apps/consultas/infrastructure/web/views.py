@@ -13,6 +13,7 @@ from apps.consultas.application.selectors.records_by_sex_queries import registro
 from apps.consultas.application.selectors.institutions_all_queries import instituciones_all
 from apps.consultas.application.selectors.federal_entities_all_queries import entidades_all
 from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
+from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
 from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
@@ -22,7 +23,8 @@ from apps.consultas.infrastructure.web.serializer import (
     SectorEconomicoSerializer,
     RegistrosPorSexoSerializer,
     RequestTypeSerializer,
-    SectorActividadSerializer 
+    SectorActividadSerializer,
+    RegistrosPorMesSerializer
 
 )
 from rest_framework.permissions import AllowAny
@@ -148,4 +150,41 @@ class ConsultaViewSet(viewsets.ViewSet):
         Endpoint para obtener el top 10 de sectores por actividad económica.
         """
         resultado = sectores_actividad_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Conteo de registros por mes para un año específico",
+        parameters=[
+            OpenApiParameter(
+                name='anio',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description='Año para filtrar los registros (ej: 2024)',
+                required=True
+            )
+        ],
+        responses={200: RegistrosPorMesSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_mes_view(self, request):
+        """
+        Endpoint para obtener el conteo de registros por mes en un año específico.
+        """
+        anio = request.query_params.get('anio')
+
+        if not anio:
+            return Response(
+                {"error": "El parámetro 'anio' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            anio = int(anio)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'anio' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        resultado = registros_por_mes_selector(anio)
         return Response(resultado, status=status.HTTP_200_OK)

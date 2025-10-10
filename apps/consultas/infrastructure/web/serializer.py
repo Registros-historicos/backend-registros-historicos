@@ -34,3 +34,7 @@ class SectorActividadSerializer(serializers.Serializer):
     tipo_sector_param = serializers.IntegerField()
     sector_nombre = serializers.CharField()
     total = serializers.IntegerField()
+
+class RegistrosPorMesSerializer(serializers.Serializer):
+    mes = serializers.IntegerField()
+    total = serializers.IntegerField()
