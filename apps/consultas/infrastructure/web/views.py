@@ -15,6 +15,7 @@ from apps.consultas.application.selectors.federal_entities_all_queries import en
 from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
 from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
 from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
+from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -167,9 +168,6 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def registros_por_mes_view(self, request):
-        """
-        Endpoint para obtener el conteo de registros por mes en un año específico.
-        """
         anio = request.query_params.get('anio')
 
         if not anio:
@@ -177,7 +175,6 @@ class ConsultaViewSet(viewsets.ViewSet):
                 {"error": "El parámetro 'anio' es requerido"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         try:
             anio = int(anio)
         except ValueError:
@@ -187,4 +184,36 @@ class ConsultaViewSet(viewsets.ViewSet):
             )
 
         resultado = registros_por_mes_selector(anio)
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Instituciones filtradas por tipo (Federal/Descentralizado)",
+        parameters=[
+            OpenApiParameter(
+                name='tipo_institucion',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description='ID del tipo de institución (ej: 122=Descentralizado, 123=Federal)',
+                required=True
+            )
+        ],
+        responses={200: InstitucionTopSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def instituciones_filtradas_view(self, request):
+        tipo_institucion = request.query_params.get('tipo_institucion')
+
+        if not tipo_institucion:
+            return Response(
+                {"error": "El parámetro 'tipo_institucion' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            tipo_institucion = int(tipo_institucion)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'tipo_institucion' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        resultado = instituciones_filtradas_selector(tipo_institucion)
         return Response(resultado, status=status.HTTP_200_OK)
