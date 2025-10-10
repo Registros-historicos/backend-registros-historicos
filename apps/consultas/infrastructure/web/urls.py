@@ -18,9 +18,5 @@ urlpatterns = [
     path('instituciones/all/', ConsultaViewSet.as_view({'get': 'instituciones_all_view'}), name='instituciones-all'),
     path('entidades/all/', ConsultaViewSet.as_view({'get': 'entidades_all_view'}), name='entidades-all'),
     path('sectores/actividad/', ConsultaViewSet.as_view({'get': 'sectores_actividad_view'}), name='sectores-actividad'),
-    path('sectores/actividad/all/', ConsultaViewSet.as_view({'get': 'sectores_actividad_all_view'}), name='sectores-actividad-all'),
-
-
-
-
+    path('sectores/actividad/all/', ConsultaViewSet.as_view({'get': 'sectores_actividad_all_view'}), name='sectores-actividad-all')
 ]
