@@ -149,10 +149,6 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def sectores_actividad_all_view(self, request):
         resultado = sectores_actividad_all()
-        """
-        Endpoint para obtener el top 10 de sectores por actividad económica.
-        """
-        resultado = sectores_actividad_top10()
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(

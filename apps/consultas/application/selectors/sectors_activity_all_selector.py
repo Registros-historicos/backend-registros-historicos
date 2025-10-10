@@ -8,4 +8,4 @@ def sectores_actividad_all() -> List[Dict]:
     Sin límite de registros.
     """
     data = get_sectores_por_actividad()
-    return sorted(data, key=lambda d: d.get("total", 0), reverse=True)
+    return data
