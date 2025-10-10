@@ -20,8 +20,6 @@ urlpatterns = [
     path('sectores/actividad/', ConsultaViewSet.as_view({'get': 'sectores_actividad_view'}), name='sectores-actividad'),
     path('registros/mes/', ConsultaViewSet.as_view({'get': 'registros_por_mes_view'}), name='registros-por-mes'),
     path('registros/periodo/', ConsultaViewSet.as_view({'get': 'registros_por_periodo'}), name='registros-por-periodo'),
-
-
-
-    path('sectores/actividad/all/', ConsultaViewSet.as_view({'get': 'sectores_actividad_all_view'}), name='sectores-actividad-all')
+    path('sectores/actividad/all/', ConsultaViewSet.as_view({'get': 'sectores_actividad_all_view'}), name='sectores-actividad-all'),
+    path('instituciones/filtradas/', ConsultaViewSet.as_view({'get': 'instituciones_filtradas_view'}), name='instituciones-filtradas'),
 ]
