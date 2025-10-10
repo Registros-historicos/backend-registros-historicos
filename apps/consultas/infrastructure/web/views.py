@@ -12,7 +12,11 @@ from apps.consultas.application.selectors.economic_sectors_queries import conteo
 from apps.consultas.application.selectors.records_by_sex_queries import registros_por_sexo_selector
 from apps.consultas.application.selectors.institutions_all_queries import instituciones_all
 from apps.consultas.application.selectors.federal_entities_all_queries import entidades_all
-from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10 
+from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
+from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
+from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
+from apps.consultas.application.selectors.records_by_period import registros_por_periodo_selector
+from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -21,7 +25,9 @@ from apps.consultas.infrastructure.web.serializer import (
     SectorEconomicoSerializer,
     RegistrosPorSexoSerializer,
     RequestTypeSerializer,
-    SectorActividadSerializer 
+    SectorActividadSerializer,
+    RegistrosPorMesSerializer,
+    RegistrosPorPeriodoSerializer
 
 )
 from rest_framework.permissions import AllowAny
@@ -133,8 +139,137 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def sectores_actividad_view(self, request):
+        resultado = sectores_actividad_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        summary="Todos los registros agrupados por sector/actividad económica",
+        responses={200: SectorActividadSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def sectores_actividad_all_view(self, request):
+        resultado = sectores_actividad_all()
         """
         Endpoint para obtener el top 10 de sectores por actividad económica.
         """
         resultado = sectores_actividad_top10()
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Conteo de registros por mes para un año específico",
+        parameters=[
+            OpenApiParameter(
+                name='anio',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description='Año para filtrar los registros (ej: 2024)',
+                required=True
+            )
+        ],
+        responses={200: RegistrosPorMesSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_mes_view(self, request):
+        anio = request.query_params.get('anio')
+
+        if not anio:
+            return Response(
+                {"error": "El parámetro 'anio' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            anio = int(anio)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'anio' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        resultado = registros_por_mes_selector(anio)
+        return Response(resultado, status=status.HTTP_200_OK)
+    
+    
+    @extend_schema(
+        summary="Conteo de registros agrupados por año, mes y tipo de registro",
+        parameters=[
+            OpenApiParameter(
+                name='inicio',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de inicio del rango (YYYY-MM-DD)',
+                required=True
+            ),
+            OpenApiParameter(
+                name='fin',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de fin del rango (YYYY-MM-DD)',
+                required=True
+            ),
+            OpenApiParameter(
+                name='fin',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de fin del rango (YYYY-MM-DD)',
+                required=True
+            )
+        ],
+        responses={200: RegistrosPorPeriodoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_periodo(self, request):
+        """
+        Endpoint para obtener registros agrupados por año, mes y tipo de registro
+        dentro de un rango de fechas.
+        """
+        fecha_inicio = request.query_params.get('inicio')
+        fecha_fin = request.query_params.get('fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response(
+                {"error": "Debe enviar los parámetros 'inicio' y 'fin' (YYYY-MM-DD)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            resultado = registros_por_periodo_selector(fecha_inicio, fecha_fin)
+            serializer = RegistrosPorPeriodoSerializer(resultado, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+
+    @extend_schema(
+        summary="Instituciones filtradas por tipo (Federal/Descentralizado)",
+        parameters=[
+            OpenApiParameter(
+                name='tipo_institucion',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description='ID del tipo de institución (ej: 122=Descentralizado, 123=Federal)',
+                required=True
+            )
+        ],
+        responses={200: InstitucionTopSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def instituciones_filtradas_view(self, request):
+        tipo_institucion = request.query_params.get('tipo_institucion')
+
+        if not tipo_institucion:
+            return Response(
+                {"error": "El parámetro 'tipo_institucion' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            tipo_institucion = int(tipo_institucion)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'tipo_institucion' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        resultado = instituciones_filtradas_selector(tipo_institucion)
         return Response(resultado, status=status.HTTP_200_OK)
