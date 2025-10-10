@@ -38,3 +38,10 @@ class SectorActividadSerializer(serializers.Serializer):
 class RegistrosPorMesSerializer(serializers.Serializer):
     mes = serializers.IntegerField()
     total = serializers.IntegerField()
+
+class RegistrosPorPeriodoSerializer(serializers.Serializer):
+    anio = serializers.IntegerField()
+    mes = serializers.IntegerField()
+    tipo_registro_param = serializers.IntegerField()
+    total = serializers.IntegerField()
+

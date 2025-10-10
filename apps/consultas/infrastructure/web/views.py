@@ -15,6 +15,7 @@ from apps.consultas.application.selectors.federal_entities_all_queries import en
 from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
 from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
 from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
+from apps.consultas.application.selectors.records_by_period import registros_por_periodo_selector
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
@@ -25,7 +26,8 @@ from apps.consultas.infrastructure.web.serializer import (
     RegistrosPorSexoSerializer,
     RequestTypeSerializer,
     SectorActividadSerializer,
-    RegistrosPorMesSerializer
+    RegistrosPorMesSerializer,
+    RegistrosPorPeriodoSerializer
 
 )
 from rest_framework.permissions import AllowAny
@@ -185,6 +187,60 @@ class ConsultaViewSet(viewsets.ViewSet):
 
         resultado = registros_por_mes_selector(anio)
         return Response(resultado, status=status.HTTP_200_OK)
+    
+    
+    @extend_schema(
+        summary="Conteo de registros agrupados por año, mes y tipo de registro",
+        parameters=[
+            OpenApiParameter(
+                name='inicio',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de inicio del rango (YYYY-MM-DD)',
+                required=True
+            ),
+            OpenApiParameter(
+                name='fin',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de fin del rango (YYYY-MM-DD)',
+                required=True
+            ),
+            OpenApiParameter(
+                name='fin',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Fecha de fin del rango (YYYY-MM-DD)',
+                required=True
+            )
+        ],
+        responses={200: RegistrosPorPeriodoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_periodo(self, request):
+        """
+        Endpoint para obtener registros agrupados por año, mes y tipo de registro
+        dentro de un rango de fechas.
+        """
+        fecha_inicio = request.query_params.get('inicio')
+        fecha_fin = request.query_params.get('fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response(
+                {"error": "Debe enviar los parámetros 'inicio' y 'fin' (YYYY-MM-DD)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            resultado = registros_por_periodo_selector(fecha_inicio, fecha_fin)
+            serializer = RegistrosPorPeriodoSerializer(resultado, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
 
     @extend_schema(
         summary="Instituciones filtradas por tipo (Federal/Descentralizado)",
