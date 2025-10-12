@@ -27,7 +27,8 @@ class RegistrosPorSexoSerializer(serializers.Serializer):
     total = serializers.IntegerField()
 
 class RequestTypeSerializer(serializers.Serializer):
-    type = serializers.CharField()
+    tipo_registro = serializers.CharField()
+    rama = serializers.CharField()
     total = serializers.IntegerField()
 
 class SectorActividadSerializer(serializers.Serializer):
@@ -44,4 +45,3 @@ class RegistrosPorPeriodoSerializer(serializers.Serializer):
     mes = serializers.IntegerField()
     tipo_registro_param = serializers.IntegerField()
     total = serializers.IntegerField()
-
