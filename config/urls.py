@@ -32,4 +32,5 @@ urlpatterns = [
     path("api/usuarios/", include(("apps.users.infrastructure.web.urls", "usuarios"), namespace="usuarios")),
     path("api/tableros/", include(("apps.consultas.infrastructure.web.urls", "tableros"), namespace="tableros")),
     path("api/registros/", include(("apps.registros.infrastructure.web.urls", "registros"), namespace="registros")),
+    path("api/parametrizaciones/", include(("apps.parametrizacion.infrastructure.web.urls", "parametrizaciones"), namespace="parametrizaciones")),
 ]
