@@ -12,6 +12,6 @@ class ParametrizacionRepository(ParametrizacionRepositoryPort):
 
     def get_by_tema(self, id_tema: int):
         with connection.cursor() as cursor:
-            cursor.execute("SELECT id_param, nombre, id_tema, id_param_padre FROM f_parametrizacion_by_tema(%s);", [id_tema])
+            cursor.execute("SELECT id_param, nombre, id_param_padre FROM f_parametrizacion_by_tema(%s);", [id_tema])
             rows = cursor.fetchall()
         return [Parametrizacion(*row) for row in rows]
