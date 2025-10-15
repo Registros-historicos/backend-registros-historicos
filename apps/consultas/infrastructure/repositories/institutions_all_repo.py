@@ -7,7 +7,7 @@ class InstitutionsAllRepository:
     """
     def obtener_instituciones_all(self) -> List[Dict]:
         query = """
-            SELECT id_institucion, institucion_nombre, total
+            SELECT id_institucion, institucion_nombre, total, tipo_institucion
             FROM f_cuenta_registros_por_institucion_all()
         """
         with connection.cursor() as cursor:

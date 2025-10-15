@@ -27,7 +27,7 @@ from apps.consultas.infrastructure.web.serializer import (
     RequestTypeSerializer,
     SectorActividadSerializer,
     RegistrosPorMesSerializer,
-    RegistrosPorPeriodoSerializer
+    RegistrosPorPeriodoSerializer, InstitucionAllSerializer
 
 )
 from rest_framework.permissions import AllowAny
@@ -117,7 +117,7 @@ class ConsultaViewSet(viewsets.ViewSet):
 
     @extend_schema(
         summary="Todas las instituciones con número de registros",
-        responses={200: InstitucionTopSerializer(many=True)},
+        responses={200: InstitucionAllSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def instituciones_all_view(self, request):
