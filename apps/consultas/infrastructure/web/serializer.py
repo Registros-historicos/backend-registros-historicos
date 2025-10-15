@@ -45,3 +45,9 @@ class RegistrosPorPeriodoSerializer(serializers.Serializer):
     mes = serializers.IntegerField()
     tipo_registro_param = serializers.IntegerField()
     total = serializers.IntegerField()
+
+class InstitucionAllSerializer(serializers.Serializer):
+    id_institucion = serializers.IntegerField()
+    institucion_nombre = serializers.CharField()
+    tipo_institucion = serializers.CharField()
+    total = serializers.IntegerField()
