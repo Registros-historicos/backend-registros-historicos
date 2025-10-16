@@ -83,7 +83,7 @@ class PostgresRegistroRepository(RegistroRepository):
 
     def habilitar(self, id_registro: int) -> None:
         with connection.cursor() as cursor:
-            estatus_habilitado = 1
+            estatus_habilitado = 24
             cursor.execute(
                 "SELECT f_habilita_registro(%s, %s)",
                 [id_registro, estatus_habilitado]
@@ -91,7 +91,7 @@ class PostgresRegistroRepository(RegistroRepository):
 
     def deshabilitar(self, id_registro: int):
         with connection.cursor() as cursor:
-            estatus_deshabilitado = 2
+            estatus_deshabilitado = 25
             cursor.execute(
                 "SELECT * FROM f_deshabilita_registro(%s, %s)",
                 [id_registro, estatus_deshabilitado]
