@@ -118,13 +118,13 @@ class PostgresRegistroRepository(RegistroRepository):
             tipo_sector_param=row[14],
         )
 
-    def listar_por_tipo(self, tipo_registro_param: int, limit: int, offset: int) -> list[dict]:
+    def listar_por_tipo(self, tipo_registro_param: int, limit: int, offset: int, filter: str, order: str) -> list[dict]:
         """ Lista registros por tipo con paginación """
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT *
-                FROM f_busca_registros_por_tipo(%s, %s, %s)
-            """, [tipo_registro_param, limit, offset])
+                FROM f_busca_registros_por_tipo(%s, %s, %s, %s, %s)
+            """, [tipo_registro_param, limit, offset, filter, order])
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
         
@@ -134,8 +134,12 @@ class PostgresRegistroRepository(RegistroRepository):
             cursor.execute("""
                 SELECT f_cuenta_registros_por_tipo(%s)
             """, [tipo_registro_param])
-            return cursor.fetchone()[0] or 0
-    
+            rows = cursor.fetchall()
+            total = sum(int(row[-1].strip('()').split(',')[-1]) for row in rows)
+
+            return total
+
+            
     def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int) -> list[dict]:
         """ Busca registros por texto con paginación """
         with connection.cursor() as cursor:
