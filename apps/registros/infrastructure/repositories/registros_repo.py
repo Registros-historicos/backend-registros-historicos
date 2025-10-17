@@ -2,7 +2,7 @@ from typing import Optional
 from apps.registros.domain.entities import Registro
 from apps.registros.domain.ports import RegistroRepository
 from psycopg2.extensions import AsIs
-from django.db import connection
+from django.db import connection, transaction
 
 
 class PostgresRegistroRepository(RegistroRepository):
@@ -54,13 +54,14 @@ class PostgresRegistroRepository(RegistroRepository):
             return None
 
     def actualizar(self, id_registro: int, registro: Registro) -> Registro:
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT f_actualiza_resgistro_por_pk(
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                )
-            """, [
-                id_registro,
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT f_actualiza_resgistro_por_pk(
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    )
+                """, [
+                    id_registro,
                 registro.no_expediente,
                 registro.titulo,
                 registro.tipo_ingreso_param,
@@ -75,9 +76,13 @@ class PostgresRegistroRepository(RegistroRepository):
                 registro.fec_solicitud,
                 registro.descripcion,
                 registro.tipo_sector_param,
-            ])
-            cursor.execute("SELECT * FROM registro WHERE id_registro = %s", [id_registro])
-            row = cursor.fetchone()
+                ])
+
+                cursor.execute("SELECT * FROM registro WHERE id_registro = %s", [id_registro])
+                row = cursor.fetchone()
+
+                if not row:
+                    raise ValueError(f"No se encontró el registro con id {id_registro}")
 
         return self._mapear_row_a_registro(row)
 
