@@ -6,7 +6,7 @@ class Registro:
     no_expediente: str = None
     titulo: str = None
     tipo_ingreso_param: str = None
-    id_usuarios: list[int] = None
+    id_usuario: int = None
     rama_param: str = None
     fec_expedicion: str = None
     observaciones: str = None
