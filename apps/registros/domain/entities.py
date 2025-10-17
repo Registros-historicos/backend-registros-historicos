@@ -6,7 +6,7 @@ class Registro:
     no_expediente: str = None
     titulo: str = None
     tipo_ingreso_param: str = None
-    id_usuario: int = None
+    id_usuarios: list[int] = None
     rama_param: str = None
     fec_expedicion: str = None
     observaciones: str = None
@@ -17,3 +17,5 @@ class Registro:
     fec_solicitud: str = None
     descripcion: str = None
     tipo_sector_param: str = None
+    id_nstituciones : list[int] = None
+    instituciones : list[str] = None

@@ -78,6 +78,8 @@ class RegistroViewSet(viewsets.ViewSet):
             OpenApiParameter(name="tipo", description="ID del tipo de registro (44=IMPI, 45=INDAUTOR)", required=True, type=int),
             OpenApiParameter(name="limit", description="Registros por página", required=False, type=int, default=10),
             OpenApiParameter(name="page", description="Número de página", required=False, type=int, default=1),
+            OpenApiParameter(name="filter", description="Campo por el cual filtrar", required=False, type=str, default="fecha_solicitud"),
+            OpenApiParameter(name="order", description="Orden de los resultados (asc/desc)", required=False, type=str, default="asc"),
         ],
         responses={200: PaginatedRegistroSerializer},
     )
@@ -86,6 +88,8 @@ class RegistroViewSet(viewsets.ViewSet):
         tipo = request.query_params.get("tipo")
         limit = int(request.query_params.get("limit", 10))
         page = int(request.query_params.get("page", 1))
+        filter = request.query_params.get("filter", "fecha_solicitud")
+        order = request.query_params.get("order", "asc")
 
         if not tipo:
             return Response(
