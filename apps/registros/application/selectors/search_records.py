@@ -1,6 +1,6 @@
 from apps.registros.infrastructure.repositories.registros_repo import PostgresRegistroRepository
 
-def search_records(tipo_registro_param: int, texto: str, page: int, limit: int) -> dict:
+def search_records(tipo_registro_param: int, texto: str, page: int, limit: int, filter: dict, order: dict) -> dict:
     """ 
     Busca registros por texto con paginación.
     Retorna: {'total': int, 'page': int, 'limit': int, 'results': list[dict]}
@@ -11,7 +11,7 @@ def search_records(tipo_registro_param: int, texto: str, page: int, limit: int) 
     print(offset)
 
     total = repository.contar_por_texto(tipo_registro_param, texto)
-    results = repository.buscar_por_texto(tipo_registro_param, texto, limit, offset)
+    results = repository.listar_por_tipo(tipo_registro_param, limit, offset, filter, order)
 
     return {
         'total': total,
