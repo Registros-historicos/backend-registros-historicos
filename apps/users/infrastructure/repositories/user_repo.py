@@ -11,7 +11,7 @@ class PgUserRepository(UserRepositoryPort):
         y devuelve la entidad Usuario completa.
         """
         rows = call_fn_rows(
-            "public.f_inserta_usuario_test", # O f_inserta_usuario si usas esa
+            "public.f_inserta_usuario",
             [
                 user.nombre,
                 user.ape_pat,
