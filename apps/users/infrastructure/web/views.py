@@ -108,8 +108,10 @@ def user_detail_update_delete_view(request, correo: str):
         serializer = UsuarioSerializer(updated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+        # ...
+
     elif request.method == 'DELETE':
-        deactivated_user = deactivate_user_by_email(correo=correo)
+        deactivated_user = deactivate_user_by_email(correo)
         if not deactivated_user:
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(deactivated_user)

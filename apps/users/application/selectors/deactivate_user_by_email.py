@@ -8,4 +8,4 @@ def deactivate_user_by_email(nombre: str) -> Optional[dict]:
     """
 
     repository = PgUserRepository()
-    return repository.deactivate_by_email(nombre,0)
+    return repository.deactivate_by_email(nombre,25) #Para habilitar usa el numero 24
