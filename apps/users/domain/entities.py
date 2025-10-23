@@ -13,5 +13,3 @@ class Usuario:
     telefono: Optional[str]
     tipo_usuario_param: int
     estatus: int
-    # created_at: Optional[datetime] = None
-    # updated_at: Optional[datetime] = None

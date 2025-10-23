@@ -3,15 +3,11 @@ from sqlite3 import IntegrityError
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
-# Importar Selectores (Casos de Uso)
 from apps.users.application.selectors.get_all_users import get_all_users
 from apps.users.application.selectors.get_user_by_email import list_users
 from apps.users.application.selectors.create_user import create_new_user
 from apps.users.application.selectors.update_user_by_email import update_user
 from apps.users.application.selectors.deactivate_user_by_email import deactivate_user_by_email
-
-# Importar Serializers
 from .serializer import UsuarioSerializer, UserCreateSerializer
 from ...domain.entities import Usuario
 
@@ -99,38 +95,22 @@ def user_detail_update_delete_view(request, correo: str):
     """
 
     if request.method == 'GET':
-        # 1. Llamar al selector de búsqueda
         usuario = list_users(correo=correo)
         if not usuario:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-
-        # 2. Serializar y devolver
         serializer = UsuarioSerializer(usuario)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'PUT':
-        # 1. Llamar al selector de actualización
-        #    update_user se encarga de extraer el password del 'data'
         updated_user = update_user(correo=correo, data=request.data)
-
         if not updated_user:
             return Response({"error": "Usuario no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
-
-        # 2. Serializar y devolver el usuario actualizado
         serializer = UsuarioSerializer(updated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
-        # 1. Llamar al selector de deshabilitación
         deactivated_user = deactivate_user_by_email(correo=correo)
-
         if not deactivated_user:
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
-
-        # 2. Devolver el usuario deshabilitado (o un 204 No Content)
-        # Devolver el objeto es útil para confirmar el cambio de estado
         serializer = UsuarioSerializer(deactivated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-        # Alternativa: Devolver "Sin Contenido"
-        # return Response(status=status.HTTP_204_NO_CONTENT)

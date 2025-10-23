@@ -35,23 +35,31 @@ class PgUserRepository(UserRepositoryPort):
 
         return Usuario(**new_user_data)
 
-    def update(self, user_id: int, user: Usuario, pwd_hash: Optional[str] = None) -> None:
-        exec_fn_void(
-            "public.f_actualiza_usuario_por_correo",  # <-- Nombre de la función actualizado
+    def update(self, user: Usuario, pwd_hash: Optional[str] = None) -> Optional[Usuario]:
+        """
+        Llama a la función de base de datos para actualizar un usuario por su correo
+        y devuelve la entidad Usuario actualizada.
+        """
+        rows = call_fn_rows(
+            "public.f_actualiza_usuario_por_correo",
             [
-                # --- Parámetros reordenados ---
-                user.correo,  # p_correo (ahora es el identificador)
-                user.nombre,  # p_nombre
-                user.ape_pat,  # p_ape_pat
-                user.ape_mat,  # p_ape_mat
-                user.url_foto,  # p_url_foto
-                pwd_hash,  # p_pwd
-                user.telefono,  # p_telefono
-                user.tipo_usuario_param,  # p_tipo_usuario_param
-                user.estatus  # p_estatus_param
-                # El user_id ya no se pasa, la nueva función no lo usa
+                user.correo,
+                user.nombre,
+                user.ape_pat,
+                user.ape_mat,
+                user.url_foto,
+                pwd_hash,
+                user.telefono,
+                user.tipo_usuario_param,
+                user.estatus
             ]
         )
+
+        if not rows:
+            return None
+
+        updated_user_data = rows[0]
+        return Usuario(**updated_user_data)
 
     def deactivate_by_email(self, correo: str, inactive_status: int) -> Optional[Usuario]:
         """
@@ -63,10 +71,10 @@ class PgUserRepository(UserRepositoryPort):
             inactive_status: El valor numérico para el estado "inactivo" (ej. 0).
         """
         rows = call_fn_rows(
-            "public.f_deshabilita_usuario",  # <-- Nombre de la función SQL actualizado
+            "public.f_deshabilita_usuario",
             [
-                correo,  # p_correo
-                inactive_status  # p_estatus_inactivo
+                correo,
+                inactive_status
             ]
         )
 
@@ -75,7 +83,7 @@ class PgUserRepository(UserRepositoryPort):
 
         r = rows[0]
 
-        # Renombrar 'estatus_param' para que coincida con tu clase Usuario
+
         if 'estatus_param' in r:
             r['estatus'] = r.pop('estatus_param')
 
@@ -87,7 +95,7 @@ class PgUserRepository(UserRepositoryPort):
         Esta función NO devuelve el hash de la contraseña.
         """
         rows = call_fn_rows(
-            "public.f_busca_usuario_por_correo_no_login",  # <-- Llama a la nueva función
+            "public.f_busca_usuario_por_correo_no_login",
             [correo]
         )
 
@@ -96,13 +104,8 @@ class PgUserRepository(UserRepositoryPort):
 
         r = rows[0]
 
-        # --- Adaptar el diccionario ---
-        # 1. Renombrar 'estatus_param' para que coincida con tu clase Usuario
         if 'estatus_param' in r:
             r['estatus'] = r.pop('estatus_param')
-
-        # 2. Ya no es necesario eliminar 'pwd', la nueva SP no lo devuelve.
-        # --- Fin de la adaptación ---
 
         return Usuario(**r)
 
@@ -110,14 +113,11 @@ class PgUserRepository(UserRepositoryPort):
         """
         Devuelve una lista con todos los usuarios de la base de datos.
         """
-        rows = call_fn_rows("public.f_buscar_todos_usuario", [])  # <-- Llama a la función SQL renombrada
-
+        rows = call_fn_rows("public.f_buscar_todos_usuario", [])
         usuarios = []
         for r in rows:
-            # Renombrar 'estatus_param' para que coincida con tu clase Usuario
             if 'estatus_param' in r:
                 r['estatus'] = r.pop('estatus_param')
 
             usuarios.append(Usuario(**r))
-
         return usuarios
