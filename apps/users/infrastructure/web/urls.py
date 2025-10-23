@@ -6,7 +6,7 @@ urlpatterns = [
     # GET: Listar todos
     # POST: Crear uno nuevo
     path(
-        'users/',
+        '',
         views.list_create_users_view,
         name='user-list-create'
     ),
@@ -17,7 +17,7 @@ urlpatterns = [
     # PUT: Actualizar usuario
     # DELETE: Deshabilitar usuario
     path(
-        'users/<path:correo>/',
+        '<path:correo>/',
         views.user_detail_update_delete_view,
         name='user-detail-update-delete'
     ),

@@ -4,7 +4,7 @@ from .entities import Usuario
 
 class UserRepositoryPort(Protocol):
 
-    def insertar(self, usuario: 'Usuario', pwd_hash: str) -> 'Usuario':
+    def insertar(self, usuario: 'Usuario', pwd_hash: str) -> Optional['Usuario']:
         """ Llama a f_inserta_usuario """
         ...
 

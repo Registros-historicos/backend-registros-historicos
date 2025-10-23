@@ -5,9 +5,13 @@ from .pg_utils import call_fn_one, call_fn_rows, exec_fn_void
 
 class PgUserRepository(UserRepositoryPort):
 
-    def create(self, user: Usuario, pwd_hash: str) -> int:
-        new_id = call_fn_one(
-            "public.f_inserta_usuario",
+    def insertar(self, user: Usuario, pwd_hash: str) -> Optional[Usuario]:
+        """
+        Llama a la función de base de datos para insertar un usuario
+        y devuelve la entidad Usuario completa.
+        """
+        rows = call_fn_rows(
+            "public.f_inserta_usuario_test", # O f_inserta_usuario si usas esa
             [
                 user.nombre,
                 user.ape_pat,
@@ -17,10 +21,19 @@ class PgUserRepository(UserRepositoryPort):
                 pwd_hash,
                 user.telefono,
                 user.tipo_usuario_param,
-                user.estatus  # Asumo que 'user.estatus' mapea a 'p_estatus_param'
+                user.estatus
             ]
         )
-        return int(new_id)
+
+        if not rows:
+            return None
+
+        new_user_data = rows[0]
+
+        if 'estatus_param' in new_user_data:
+            new_user_data['estatus'] = new_user_data.pop('estatus_param')
+
+        return Usuario(**new_user_data)
 
     def update(self, user_id: int, user: Usuario, pwd_hash: Optional[str] = None) -> None:
         exec_fn_void(

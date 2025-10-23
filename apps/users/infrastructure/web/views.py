@@ -1,3 +1,5 @@
+from sqlite3 import IntegrityError
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,6 +13,7 @@ from apps.users.application.selectors.deactivate_user_by_email import deactivate
 
 # Importar Serializers
 from .serializer import UsuarioSerializer, UserCreateSerializer
+from ...domain.entities import Usuario
 
 
 @api_view(['GET', 'POST'])
@@ -26,30 +29,66 @@ def list_create_users_view(request):
         serializer = UsuarioSerializer(usuarios_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     elif request.method == 'POST':
-        # 1. Validar los datos de entrada
+
         serializer = UserCreateSerializer(data=request.data)
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # 2. Extraer datos validados
         data = serializer.validated_data
-        raw_password = data.pop('password')  # Sacar el password
 
-        # 3. Llamar al selector de creación
+        raw_password = data.pop('password')
+
         try:
-            new_user = create_new_user(data=data, raw_password=raw_password)
-            if not new_user:
-                # Podría pasar si el correo ya existe (depende de la lógica de f_inserta_usuario)
-                return Response({"error": "No se pudo crear el usuario."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 4. Serializar y devolver el nuevo usuario
-            response_serializer = UsuarioSerializer(new_user)
+            user_entity = Usuario(
+
+                id_usuario=None,
+
+                nombre=data['nombre'],
+
+                ape_pat=data['ape_pat'],
+
+                ape_mat=data.get('ape_mat'),
+
+                url_foto=data.get('url_foto'),
+
+                correo=data['correo'],
+
+                telefono=data.get('telefono'),
+
+                tipo_usuario_param=data['tipo_usuario_param'],
+
+                estatus=data['estatus']
+
+            )
+
+            # --- CAMBIO CLAVE 1: Llama al selector correcto ---
+
+            new_user_obj = create_new_user(user_entity, raw_password)
+
+            if not new_user_obj:
+                return Response({"error": "No se pudo crear el usuario."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # --- CAMBIO CLAVE 2: Serializa el objeto devuelto por la BD ---
+
+            response_serializer = UsuarioSerializer(new_user_obj)
+
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
+
+        # --- CAMBIO CLAVE 3: Manejo de error específico ---
+
+        except IntegrityError:
+
+            return Response({"error": f"El correo '{data['correo']}' ya existe."}, status=status.HTTP_409_CONFLICT)
+
         except Exception as e:
-            # Capturar posibles errores de base de datos (ej. correo duplicado)
-            return Response({"error": f"Error al crear usuario: {str(e)}"}, status=status.HTTP_409_CONFLICT)
+
+            return Response({"error": f"Error inesperado al crear usuario: {str(e)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])

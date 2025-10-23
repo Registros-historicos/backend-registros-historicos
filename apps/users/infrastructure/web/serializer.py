@@ -14,8 +14,8 @@ class UsuarioSerializer(serializers.Serializer):
     telefono = serializers.CharField(allow_null=True, required=False)
     tipo_usuario_param = serializers.IntegerField()
     estatus = serializers.IntegerField()
-    created_at = serializers.DateTimeField(read_only=True)
-    updated_at = serializers.DateTimeField(read_only=True)
+    # created_at = serializers.DateTimeField(read_only=True)
+    # updated_at = serializers.DateTimeField(read_only=True)
 
     # Nota: Como Usuario es un dataclass, este serializador se usa
     # principalmente para *serializar* (convertir a JSON) datos

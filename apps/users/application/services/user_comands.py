@@ -8,19 +8,20 @@ class UserCommandsService:
         self.repo = repo
 
     def create_user(self, data: dict, raw_password: str) -> int:
-        user = Usuario(
-            id_usuario=None,
-            nombre=data["nombre"],
-            ape_pat=data["ape_pat"],
-            ape_mat=data.get("ape_mat"),
-            url_foto=data.get("url_foto"),
-            correo=data["correo"],
-            telefono=data.get("telefono"),
-            tipo_usuario_param=data["tipo_usuario_param"],
-            estatus=data.get("estatus", 1),
-        )
-        pwd_hash = make_password(raw_password)  # PBKDF2 por defecto
-        return self.repo.create(user, pwd_hash)
+        def create_user(self, data: dict, raw_password: str) -> int:
+            user = Usuario(
+                id_usuario=None,
+                nombre=data["nombre"],
+                ape_pat=data["ape_pat"],
+                ape_mat=data.get("ape_mat"),
+                url_foto=data.get("url_foto"),
+                correo=data["correo"],
+                telefono=data.get("telefono"),
+                tipo_usuario_param=data["tipo_usuario_param"],
+                estatus=data.get("estatus", 24),
+            )
+            pwd_hash = make_password(raw_password)
+            return self.repo.create(user, pwd_hash)
 
     def update_user(self, user_id: int, data: dict, new_password: Optional[str] = None) -> None:
         user = Usuario(
