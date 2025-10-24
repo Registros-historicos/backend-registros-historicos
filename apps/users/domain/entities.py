@@ -12,6 +12,4 @@ class Usuario:
     correo: str
     telefono: Optional[str]
     tipo_usuario_param: int
-    estatus: int = 1
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    estatus: int

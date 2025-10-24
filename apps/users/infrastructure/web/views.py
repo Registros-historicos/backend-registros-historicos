@@ -1,122 +1,118 @@
-from rest_framework import status, viewsets
+from sqlite3 import IntegrityError
+
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework import status
+from apps.users.application.selectors.get_all_users import get_all_users
+from apps.users.application.selectors.get_user_by_email import list_users
+from apps.users.application.selectors.create_user import create_new_user
+from apps.users.application.selectors.update_user_by_email import update_user
+from apps.users.application.selectors.deactivate_user_by_email import deactivate_user_by_email
+from .serializer import UsuarioSerializer, UserCreateSerializer
+from ...domain.entities import Usuario
 
-from apps.users.infrastructure.repositories.user_repo import PgUserRepository
-from apps.users.application.selectors.user_queries import UserQueriesSelector
-from apps.users.application.services.user_comands import UserCommandsService
-from apps.users.infrastructure.web.serializer import (
-    UsuarioCreateSerializer,
-    UsuarioUpdateSerializer,
-    UsuarioResponseSerializer,
-)
 
-from rest_framework.permissions import AllowAny
-
-class UsuarioViewSet(viewsets.ViewSet):
-    
-    permission_classes = [AllowAny] # permite acceso sin token / usar solo en app login / ESTE ES UN EJEMPLOOO
+@api_view(['GET', 'POST'])
+def list_create_users_view(request):
     """
-    ViewSet para gestión de usuarios mediante funciones almacenadas en Postgres.
-    
-    Endpoints generados automáticamente por DRF Router:
-    - **GET** `/api/usuarios/` — Listar usuarios, con filtros opcionales.
-    - **POST** `/api/usuarios/` — Crear nuevo usuario.
-    - **GET** `/api/usuarios/{id}/` — Obtener usuario por ID.
-    - **PUT/PATCH** `/api/usuarios/{id}/` — Actualizar usuario.
-    - **DELETE** `/api/usuarios/{id}/` — Eliminar usuario.
+    Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
     """
+    if request.method == 'GET':
+        # 1. Llamar al selector para obtener todos los usuarios
+        usuarios_list = get_all_users()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        repo = PgUserRepository()
-        self.commands = UserCommandsService(repo)
-        self.queries = UserQueriesSelector(repo)
-
-    @extend_schema(
-        summary="Listar usuarios",
-        description="Obtiene la lista de usuarios con filtros opcionales por búsqueda y estatus.",
-        parameters=[
-            OpenApiParameter(name="q", description="Texto de búsqueda (nombre, apellidos, correo)", required=False, type=str),
-            OpenApiParameter(name="estatus", description="Filtrar por estatus (1=activo, 0=inactivo)", required=False, type=int),
-            OpenApiParameter(name="limit", description="Número máximo de resultados", required=False, type=int, default=50),
-            OpenApiParameter(name="offset", description="Número de elementos a omitir (paginación)", required=False, type=int, default=0),
-        ],
-        responses={200: UsuarioResponseSerializer(many=True)},
-    )
-    def list(self, request):
-        """Devuelve un listado de usuarios paginado y opcionalmente filtrado."""
-        q = request.query_params.get("q", "")
-        estatus = request.query_params.get("estatus")
-        estatus = int(estatus) if estatus is not None else None
-        limit = int(request.query_params.get("limit", 50))
-        offset = int(request.query_params.get("offset", 0))
-
-        items = self.queries.list(q=q, estatus=estatus, limit=limit, offset=offset)
-        serializer = UsuarioResponseSerializer(items, many=True)
+        # 2. Serializar los datos
+        serializer = UsuarioSerializer(usuarios_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @extend_schema(
-        summary="Obtener usuario por ID",
-        responses={200: UsuarioResponseSerializer, 404: {"description": "Usuario no encontrado"}},
-    )
-    def retrieve(self, request, pk=None):
-        """Obtiene un usuario específico por su ID."""
-        item = self.queries.get(int(pk))
-        if not item:
-            return Response({"detail": "No encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(UsuarioResponseSerializer(item).data, status=status.HTTP_200_OK)
 
-    @extend_schema(
-        summary="Crear usuario",
-        request=UsuarioCreateSerializer,
-        responses={201: UsuarioResponseSerializer},
-    )
-    def create(self, request):
-        """Crea un nuevo usuario a partir de los datos proporcionados."""
-        serializer = UsuarioCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        payload = serializer.validated_data.copy()
-        raw_pwd = payload.pop("password")
-        new_id = self.commands.create_user(payload, raw_pwd)
-        item = self.queries.get(new_id)
-        return Response(UsuarioResponseSerializer(item).data, status=status.HTTP_201_CREATED)
+    elif request.method == 'POST':
 
-    @extend_schema(
-        summary="Actualizar usuario",
-        request=UsuarioUpdateSerializer,
-        responses={200: UsuarioResponseSerializer, 404: {"description": "Usuario no encontrado"}},
-    )
-    def update(self, request, pk=None):
-        """Actualiza los datos de un usuario existente."""
-        serializer = UsuarioUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        payload = serializer.validated_data.copy()
-        new_password = payload.pop("new_password", None)
-        self.commands.update_user(int(pk), payload, new_password=new_password or None)
-        item = self.queries.get(int(pk))
-        if not item:
-            return Response({"detail": "No encontrado"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(UsuarioResponseSerializer(item).data, status=status.HTTP_200_OK)
+        serializer = UserCreateSerializer(data=request.data)
 
-    @extend_schema(
-        summary="Eliminar usuario",
-        responses={204: {"description": "Usuario eliminado"}},
-    )
-    def destroy(self, request, pk=None):
-        """Elimina un usuario por ID."""
-        self.commands.delete_user(int(pk))
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(
-        summary="Usuario actual (dummy)",
-        description="Endpoint de prueba para retornar info del usuario autenticado (por implementar).",
-        responses={200: {"type": "object", "properties": {"ok": {"type": "boolean"}}}},
-    )
-    @action(detail=False, methods=["get"])
-    def me(self, request):
-        """Endpoint de ejemplo para representar el usuario autenticado."""
-        return Response({"ok": True}, status=status.HTTP_200_OK)
+        data = serializer.validated_data
 
- 
+        raw_password = data.pop('password')
+
+        try:
+
+            user_entity = Usuario(
+
+                id_usuario=None,
+
+                nombre=data['nombre'],
+
+                ape_pat=data['ape_pat'],
+
+                ape_mat=data.get('ape_mat'),
+
+                url_foto=data.get('url_foto'),
+
+                correo=data['correo'],
+
+                telefono=data.get('telefono'),
+
+                tipo_usuario_param=data['tipo_usuario_param'],
+
+                estatus=data['estatus']
+
+            )
+
+            # --- CAMBIO CLAVE 1: Llama al selector correcto ---
+
+            new_user_obj = create_new_user(user_entity, raw_password)
+
+            if not new_user_obj:
+                return Response({"error": "No se pudo crear el usuario."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # --- CAMBIO CLAVE 2: Serializa el objeto devuelto por la BD ---
+
+            response_serializer = UsuarioSerializer(new_user_obj)
+
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+        # --- CAMBIO CLAVE 3: Manejo de error específico ---
+
+        except IntegrityError:
+
+            return Response({"error": f"El correo '{data['correo']}' ya existe."}, status=status.HTTP_409_CONFLICT)
+
+        except Exception as e:
+
+            return Response({"error": f"Error inesperado al crear usuario: {str(e)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def user_detail_update_delete_view(request, correo: str):
+    """
+    Vista para Obtener (GET), Actualizar (PUT) o Deshabilitar (DELETE)
+    un usuario específico por su correo.
+    """
+
+    if request.method == 'GET':
+        usuario = list_users(correo=correo)
+        if not usuario:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UsuarioSerializer(usuario)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        updated_user = update_user(correo=correo, data=request.data)
+        if not updated_user:
+            return Response({"error": "Usuario no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UsuarioSerializer(updated_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # ...
+
+    elif request.method == 'DELETE':
+        deactivated_user = deactivate_user_by_email(correo)
+        if not deactivated_user:
+            return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UsuarioSerializer(deactivated_user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
