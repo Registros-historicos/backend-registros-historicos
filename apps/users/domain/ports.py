@@ -1,21 +1,33 @@
-from abc import ABC, abstractmethod
-from typing import Iterable, Optional
+from typing import Protocol, Optional, List
 from .entities import Usuario
 
-class UserRepositoryPort(ABC):
 
-    @abstractmethod
-    def create(self, user: Usuario, pwd_hash: str) -> int: ...
+class UserRepositoryPort(Protocol):
 
-    @abstractmethod
-    def update(self, user_id: int, user: Usuario, pwd_hash: Optional[str] = None) -> None: ...
+    def insertar(self, usuario: 'Usuario', pwd_hash: str) -> Optional['Usuario']:
+        """ Llama a f_inserta_usuario """
+        ...
 
-    @abstractmethod
-    def delete(self, user_id: int) -> None: ...
+    def actualizar(self, correo: str, usuario: 'Usuario', pwd_hash: Optional[str]) -> 'Usuario':
+        """ Llama a f_actualiza_usuario_por_correo """
+        ...
 
-    @abstractmethod
-    def get_by_id(self, user_id: int) -> Optional[Usuario]: ...
+    def habilitar(self, correo: str, estatus_activo: int) -> Optional['Usuario']:
+        """ Llama a f_habilita_usuario """
+        ...
 
-    @abstractmethod
-    def list(self, q: str = "", estatus: Optional[int] = None,
-             limit: int = 50, offset: int = 0) -> Iterable[Usuario]: ...
+    def deshabilitar(self, correo: str, estatus_inactivo: int) -> Optional['Usuario']:
+        """ Llama a f_deshabilita_usuario """
+        ...
+
+    def buscar_todos_usuario(self) -> List['Usuario']:
+        """ Llama a f_buscar_todos_usuario """
+        ...
+
+    def obtener_por_correo(self, correo: str) -> Optional['Usuario']:
+        """ Llama a f_busca_usuario_por_correo_no_login """
+        ...
+
+    def obtener_por_correo_login(self, correo: str) -> Optional[tuple['Usuario', str]]:
+        """ Llama a f_busca_usuario_por_correo (para login) """
+        ...
