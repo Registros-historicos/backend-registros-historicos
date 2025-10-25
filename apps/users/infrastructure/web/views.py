@@ -1,6 +1,8 @@
-from sqlite3 import IntegrityError
+from django.db import IntegrityError
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from apps.users.application.selectors.get_all_users import get_all_users
@@ -13,6 +15,7 @@ from ...domain.entities import Usuario
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def list_create_users_view(request):
     """
     Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
@@ -88,6 +91,7 @@ def list_create_users_view(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def user_detail_update_delete_view(request, correo: str):
     """
     Vista para Obtener (GET), Actualizar (PUT) o Deshabilitar (DELETE)
@@ -116,3 +120,30 @@ def user_detail_update_delete_view(request, correo: str):
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(deactivated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class MeView(APIView):
+    """
+    Devuelve los datos del usuario autenticado (según el JWT).
+    Compatible con tu JWTAuth (request.user es un objeto con claims).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        u = request.user  # JWTUser con is_authenticated=True
+        data = {
+            "id_usuario": getattr(u, "id_usuario", getattr(u, "id", None)) or getattr(u, "sub", None),
+            "correo": getattr(u, "correo", getattr(u, "email", None)),
+            "tipo_usuario_param": getattr(u, "tipo_usuario_param", None),
+            "nombre": getattr(u, "nombre", None),
+        }
+
+        # Si además tu autenticador deja el payload en request.auth, complementar:
+        claims = getattr(request, "auth", None)
+        if isinstance(claims, dict):
+            data["id_usuario"] = data["id_usuario"] or claims.get("sub")
+            data["correo"] = data["correo"] or claims.get("correo")
+            data["tipo_usuario_param"] = data["tipo_usuario_param"] or claims.get("tipo_usuario_param")
+            data["nombre"] = data.get("nombre") or claims.get("nombre")
+
+        return Response(data, status=status.HTTP_200_OK)
+
