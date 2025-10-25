@@ -1,13 +1,24 @@
 from django.urls import path
-from apps.users.infrastructure.web import views
+from django.urls import include
+from rest_framework.routers import DefaultRouter
+
+from .views import (
+    list_create_users_view,
+    user_detail_update_delete_view,
+    MeView
+)
+from .auth_views import LoginView, RefreshView
 
 urlpatterns = [
+    path("auth/login/", LoginView.as_view(), name="auth-login"),
+    path("auth/refresh/", RefreshView.as_view(), name="auth-refresh"),
+
     # Ruta para /users/
     # GET: Listar todos
     # POST: Crear uno nuevo
     path(
         '',
-        views.list_create_users_view,
+        list_create_users_view,
         name='user-list-create'
     ),
 
@@ -24,7 +35,7 @@ urlpatterns = [
     # DELETE: Deshabilitar usuario
     path(
         '<path:correo>/',
-        views.user_detail_update_delete_view,
+        user_detail_update_delete_view,
         name='user-detail-update-delete'
     ),
 ]

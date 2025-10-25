@@ -30,11 +30,14 @@ from apps.consultas.infrastructure.web.serializer import (
     RegistrosPorPeriodoSerializer, InstitucionAllSerializer
 
 )
-from rest_framework.permissions import AllowAny
+
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from apps.users.application.services.permissions import HasRole
 
 class ConsultaViewSet(viewsets.ViewSet):
     
-    permission_classes = [AllowAny] # permite acceso sin token / usar solo en app login / ESTE ES UN EJEMPLOOO
+    permission_classes = [IsAuthenticated, HasRole]
+    allowed_roles = [35] # Solo permite acceso al rol Administrador
     """
     ViewSet para tableros de consultas.
     """
