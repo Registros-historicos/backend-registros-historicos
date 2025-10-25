@@ -121,3 +121,21 @@ class PgUserRepository(UserRepositoryPort):
 
             usuarios.append(Usuario(**r))
         return usuarios
+
+    def get_users_by_type(self, tipo: int) -> List[Usuario]:  # <-- CAMBIO 1: Devolver List[Usuario]
+        """
+        Busca TODOS los usuarios por su tipo y devuelve una LISTA de objetos Usuario.
+        """
+        rows = call_fn_rows(
+            "public.f_busca_usuario_por_tipo_usuario",
+            [tipo]  # <-- CAMBIO 2: Usar 'tipo' (ver punto 3)
+        )
+
+        # --- CAMBIO 3: Iterar para crear una lista ---
+        usuarios = []
+        for r in rows:
+            if 'estatus_param' in r:
+                r['estatus'] = r.pop('estatus_param')
+            usuarios.append(Usuario(**r))
+
+        return usuarios  # <-- CAMBIO 4: Devolver la lista completa

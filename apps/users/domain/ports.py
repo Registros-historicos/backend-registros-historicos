@@ -31,3 +31,7 @@ class UserRepositoryPort(Protocol):
     def obtener_por_correo_login(self, correo: str) -> Optional[tuple['Usuario', str]]:
         """ Llama a f_busca_usuario_por_correo (para login) """
         ...
+
+    def obtener_por_tipo(self, tipo: int) -> Optional['Usuario']:
+        """ Llama a f_busca_usuario_por_tipo_usuario """
+        ...
