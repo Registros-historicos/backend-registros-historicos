@@ -13,6 +13,7 @@ from apps.users.application.selectors.deactivate_user_by_email import deactivate
 from .serializer import UsuarioSerializer, UserCreateSerializer
 from ...application.selectors.get_users_by_type import get_users_by_type_list
 from ...domain.entities import Usuario
+from django.contrib.auth.hashers import make_password
 
 
 @api_view(['GET', 'POST'])
@@ -67,7 +68,7 @@ def list_create_users_view(request):
 
             # --- CAMBIO CLAVE 1: Llama al selector correcto ---
 
-            new_user_obj = create_new_user(user_entity, raw_password)
+            new_user_obj = create_new_user(user_entity, make_password(raw_password))
 
             if not new_user_obj:
                 return Response({"error": "No se pudo crear el usuario."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
