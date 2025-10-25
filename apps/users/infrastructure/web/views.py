@@ -11,6 +11,7 @@ from apps.users.application.selectors.create_user import create_new_user
 from apps.users.application.selectors.update_user_by_email import update_user
 from apps.users.application.selectors.deactivate_user_by_email import deactivate_user_by_email
 from .serializer import UsuarioSerializer, UserCreateSerializer
+from ...application.selectors.get_users_by_type import get_users_by_type_list
 from ...domain.entities import Usuario
 
 
@@ -120,7 +121,6 @@ def user_detail_update_delete_view(request, correo: str):
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(deactivated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 class MeView(APIView):
     """
     Devuelve los datos del usuario autenticado (según el JWT).
@@ -146,4 +146,14 @@ class MeView(APIView):
             data["nombre"] = data.get("nombre") or claims.get("nombre")
 
         return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def user_by_type_view(request, tipo: int):  # <-- CAMBIO 1: El argumento debe ser 'tipo' (ver punto 3)
+    """
+    Vista para Obtener una LISTA de usuarios por su tipo (GET).
+    """
+    if request.method == 'GET':
+        usuarios_list = get_users_by_type_list(tipo)
+        serializer = UsuarioSerializer(usuarios_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

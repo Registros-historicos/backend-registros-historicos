@@ -22,6 +22,12 @@ urlpatterns = [
         name='user-list-create'
     ),
 
+    path(
+        'tipo/<int:tipo>/',
+        views.user_by_type_view,
+        name='user-by-type'
+    ),
+
     # Ruta para /users/usuario@ejemplo.com/
     # Usamos <path:correo> para capturar correctamente los emails
     # GET: Detalle de usuario
