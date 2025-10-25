@@ -12,8 +12,18 @@ from .serializer import UsuarioSerializer, UserCreateSerializer
 from ...domain.entities import Usuario
 
 
+<<<<<<< Updated upstream
 @api_view(['GET', 'POST'])
 def list_create_users_view(request):
+=======
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from apps.core.permissions import HasRole
+
+class UsuarioViewSet(viewsets.ViewSet):
+    
+    permission_classes = [IsAuthenticated, HasRole]
+    allowed_roles = [35]
+>>>>>>> Stashed changes
     """
     Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
     """
@@ -33,6 +43,7 @@ def list_create_users_view(request):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+<<<<<<< Updated upstream
         data = serializer.validated_data
 
         raw_password = data.pop('password')
@@ -116,3 +127,32 @@ def user_detail_update_delete_view(request, correo: str):
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(deactivated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+=======
+    @extend_schema(
+        summary="Usuario actual (dummy)",
+        description="Endpoint de prueba para retornar info del usuario autenticado (por implementar).",
+        responses={200: {"type": "object", "properties": {"ok": {"type": "boolean"}}}},
+    )
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        u = request.user
+        data = {
+            "id_usuario": getattr(u, "id_usuario", getattr(u, "id", None)),
+            "correo": getattr(u, "correo", getattr(u, "email", None)),
+            "tipo_usuario_param": getattr(u, "tipo_usuario_param", None),
+            "nombre": getattr(u, "nombre", None),
+        }
+
+        claims = None
+        if getattr(request, "auth", None):
+            claims = getattr(request.auth, "payload", None) or request.auth
+
+        if isinstance(claims, dict):
+            data["id_usuario"] = data["id_usuario"] or claims.get("sub")
+            data["correo"] = data["correo"] or claims.get("correo")
+            data["tipo_usuario_param"] = data["tipo_usuario_param"] or claims.get("tipo_usuario_param")
+            data["nombre"] = data.get("nombre") or claims.get("nombre")
+
+        return Response(data)
+
+>>>>>>> Stashed changes

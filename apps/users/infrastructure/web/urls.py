@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 from django.urls import path
 from apps.users.infrastructure.web import views
 
@@ -22,3 +23,18 @@ urlpatterns = [
         name='user-detail-update-delete'
     ),
 ]
+=======
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import UsuarioViewSet
+from .auth_views import LoginView, RefreshView
+
+router = DefaultRouter()
+router.register(r'', UsuarioViewSet, basename='usuarios')
+
+urlpatterns = [
+    path("auth/login/", LoginView.as_view(), name="auth-login"),
+    path("auth/refresh/", RefreshView.as_view(), name="auth-refresh"),
+    path("", include(router.urls)),
+]
+>>>>>>> Stashed changes
