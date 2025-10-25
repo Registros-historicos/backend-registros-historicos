@@ -32,7 +32,7 @@ from apps.consultas.infrastructure.web.serializer import (
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from apps.core.permissions import HasRole
+from apps.core.application.services.permissions import HasRole
 
 class ConsultaViewSet(viewsets.ViewSet):
     
