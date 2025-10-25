@@ -5,7 +5,7 @@ from .views import (
 )
 
 urlpatterns = [
-    # GET /api/instituciones/con-cepat/
+    # GET /api/institucion/con-cepat/
     path(
         'con-cepat/',
         list_instituciones_con_cepat_view,

@@ -3,10 +3,8 @@ from rest_framework.permissions import IsAuthenticated  # O la que uses
 from rest_framework.response import Response
 from rest_framework import status
 
-from apps.institucion.application.selectors import get_all_by_id_cepat
-from apps.institucion.application.services.institucion_commands import update_institucion_id_cepat
-
 from .serializer import InstitucionSerializer, UpdateIdCepatSerializer
+from ...application.selectors.get_all_by_id_cepat import get_institutions_by_id_cepat
 
 
 @api_view(['GET'])
@@ -17,7 +15,7 @@ def list_instituciones_con_cepat_view(request):
     """
     if request.method == 'GET':
         # 1. Llamar al selector
-        instituciones_list = get_all_by_id_cepat()
+        instituciones_list = get_institutions_by_id_cepat()
 
         # 2. Serializar los datos
         serializer = InstitucionSerializer(instituciones_list, many=True)

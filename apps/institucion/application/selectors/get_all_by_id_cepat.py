@@ -2,7 +2,7 @@ from typing import List
 from apps.institucion.infrastructure.repositories.institucion_repo import PgInstitucionRepository
 from apps.institucion.domain.entities import Institucion
 
-def get_all_by_id_cepat() -> List[Institucion]:
+def get_institutions_by_id_cepat() -> List[Institucion]:
     """
     Selector para listar todas las instituciones con un id_cepat coincidente.
     """
