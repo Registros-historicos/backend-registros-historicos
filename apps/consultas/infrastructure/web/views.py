@@ -37,7 +37,7 @@ from apps.users.application.services.permissions import HasRole
 class ConsultaViewSet(viewsets.ViewSet):
     
     permission_classes = [IsAuthenticated, HasRole]
-    allowed_roles = [35] # Solo permite acceso al rol Administrador
+    allowed_roles = [35, 37] # Permite acceso a Administrador (35) y a CEPAT (37)
     """
     ViewSet para tableros de consultas.
     """
