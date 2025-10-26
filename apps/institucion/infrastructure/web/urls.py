@@ -12,7 +12,7 @@ urlpatterns = [
         name='institucion-list-con-cepat'
     ),
 
-    # PUT /api/instituciones/123/actualizar-id-cepat/
+    # PUT /api/institucion/123/actualizar-id-cepat/
     path(
         '<int:id_institucion>/actualizar-id-cepat/',
         update_institucion_id_cepat_view,

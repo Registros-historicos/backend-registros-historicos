@@ -5,22 +5,42 @@ from rest_framework import status
 
 from .serializer import InstitucionSerializer, UpdateIdCepatSerializer
 from ...application.selectors.get_all_by_id_cepat import get_institutions_by_id_cepat
+from ...application.selectors.update_id_cepat_by_id_institucion import update_institucion_id_cepat
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def list_instituciones_con_cepat_view(request):
     """
-    Vista para Listar todas las instituciones con id_cepat coincidente (GET).
+    Vista para Listar todas las instituciones que coinciden con un 'id_cepat' (GET).
     """
     if request.method == 'GET':
-        # 1. Llamar al selector
-        instituciones_list = get_institutions_by_id_cepat()
 
-        # 2. Serializar los datos
+        # 1. Obtener el 'id_cepat' desde los query params de la URL
+        id_cepat_str = request.query_params.get('id_cepat')
+
+        # 2. Validar que el parámetro exista
+        if not id_cepat_str:
+            return Response(
+                {"error": "El parámetro 'id_cepat' es requerido."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # 3. Validar que sea un entero
+            id_cepat_int = int(id_cepat_str)
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "El 'id_cepat' debe ser un número entero."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 4. Llamar al selector con el ID validado
+        instituciones_list = get_institutions_by_id_cepat(id_cepat_int)
+
+        # 5. Serializar los datos
         serializer = InstitucionSerializer(instituciones_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])

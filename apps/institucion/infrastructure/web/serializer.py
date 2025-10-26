@@ -6,12 +6,11 @@ class InstitucionSerializer(serializers.Serializer):
     Serializa el dataclass Institucion para las respuestas de la API.
     """
     id_institucion = serializers.IntegerField(read_only=True)
-    id_cepat = serializers.IntegerField(allow_null=True)
     nombre = serializers.CharField()
-    clave = serializers.CharField()
-    direccion = serializers.CharField(allow_null=True)
-    estatus = serializers.IntegerField(source='estatus_param', required=False)
-
+    ent_federativa_param = serializers.IntegerField(allow_null=True, required=False)
+    tipo_institucion_param = serializers.IntegerField(allow_null=True, required=False)
+    id_cepat = serializers.IntegerField(allow_null=True, required=False)
+    ciudad_param = serializers.IntegerField(allow_null=True, required=False)
 
 class UpdateIdCepatSerializer(serializers.Serializer):
     """

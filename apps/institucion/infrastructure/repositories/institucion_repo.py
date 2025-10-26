@@ -33,12 +33,15 @@ class PgInstitucionRepository(InstitucionRepositoryPort):
         institucion_data = rows[0]
         return self._mapear_fila_a_entidad(institucion_data)
 
-    def listar_con_cepat_match(self) -> List[Institucion]:
+    def listar_con_cepat_match(self, id_cepat: int) -> List[Institucion]:
         """
-        Devuelve una lista con todas las instituciones que coinciden en cepat.
+        Devuelve una lista con todas las instituciones que coinciden
+        con un id_cepat específico.
         """
-        rows = call_fn_rows("public.f_listar_instituciones_con_cepat", [])
-
+        rows = call_fn_rows(
+            "public.f_busca_instituciones_con_cepat",
+            [id_cepat]
+        )
         instituciones = []
         for r in rows:
             instituciones.append(self._mapear_fila_a_entidad(r))
