@@ -35,4 +35,5 @@ urlpatterns = [
     path("api/parametrizaciones/", include(("apps.parametrizacion.infrastructure.web.urls", "parametrizaciones"), namespace="parametrizaciones")),
 
     path("api/cepat/", include(("apps.cepat.infrastructure.web.urls", "cepat"), namespace="cepat")),
+    path("api/institucion/", include(("apps.institucion.infrastructure.web.urls", "institucion"), namespace="institucion")),
 ]
