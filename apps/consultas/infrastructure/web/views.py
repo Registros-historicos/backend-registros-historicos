@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor
+from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor, requests_by_type_selector
 from apps.consultas.application.selectors.institutions_top10_queries import instituciones_top10
 from apps.consultas.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.consultas.application.selectors.federal_entities_top10_queries import entidades_top10
@@ -37,7 +37,7 @@ from apps.users.application.services.permissions import HasRole
 class ConsultaViewSet(viewsets.ViewSet):
     
     permission_classes = [IsAuthenticated, HasRole]
-    allowed_roles = [35] # Solo permite acceso al rol Administrador
+    allowed_roles = [35, 37] # Permite acceso a Administrador (35) y a CEPAT (37)
     """
     ViewSet para tableros de consultas.
     """
@@ -100,13 +100,14 @@ class ConsultaViewSet(viewsets.ViewSet):
     def registros_por_sexo_view(self, request):
         resultado = registros_por_sexo_selector()
         return Response(resultado, status=status.HTTP_200_OK)
+    
     @extend_schema(
         summary="Requests grouped by type (IMPI)",
         responses={200: RequestTypeSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def requests_impi_view(self, request):
-        result = requests_impi()
+        result = requests_by_type_selector(44, request.user)  # 44 = tipo IMPI
         return Response(result, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -115,8 +116,9 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def requests_indautor_view(self, request):
-        result = requests_indautor()
+        result = requests_by_type_selector(45, request.user)  # 45 = tipo INDAUTOR
         return Response(result, status=status.HTTP_200_OK)
+
 
     @extend_schema(
         summary="Todas las instituciones con número de registros",

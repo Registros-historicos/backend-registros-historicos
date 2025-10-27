@@ -10,7 +10,7 @@ except Exception:
 
 class AuthService:
 
-    def _issue(self, claims: dict, minutes: int = 60):
+    def _issue(self, claims: dict, minutes: int = 200):
         now = datetime.now(timezone.utc)
         payload = {
             **claims,
