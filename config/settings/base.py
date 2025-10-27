@@ -109,6 +109,43 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
+# =====================================================================
+# 🎨 CONFIGURACIÓN SWAGGER / drf-spectacular
+# =====================================================================
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API de Consultas y Registros IMPI/INDAUTOR',
+    'DESCRIPTION': 'Documentación interactiva de la API del sistema de consultas y registros.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,  # el endpoint /schema solo sirve el esquema, sin docs
+    'COMPONENT_SPLIT_REQUEST': True,
+
+    'SWAGGER_UI_SETTINGS': {
+        "deepLinking": True,
+        "persistAuthorization": True,   
+        "displayRequestDuration": True,
+        "filter": True,
+    },
+
+    'SECURITY': [
+        {'BearerAuth': []},
+    ],
+    'COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': (
+                    'Introduce tu token JWT con el prefijo **Bearer**, por ejemplo:'
+                    '<br><br>`Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...`'
+                ),
+            },
+        },
+    },
+}
+
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
