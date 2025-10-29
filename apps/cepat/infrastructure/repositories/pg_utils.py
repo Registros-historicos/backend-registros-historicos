@@ -13,10 +13,11 @@ class PgCepatRepository(CepatRepositoryPort):
         """Mapea un diccionario de fila de BD a la entidad Cepat."""
         return Cepat(**row)
 
-    def create(self, nombre: str) -> Cepat:
+    def create(self, nombre: str, id_usuario: int) -> Cepat:
         """ Llama a f_inserta_cepat """
-        rows = call_fn_rows("public.f_inserta_cepat", [nombre])
-        # f_inserta_cepat devuelve el registro creado
+
+        rows = call_fn_rows("public.f_inserta_cepat", [nombre, id_usuario])
+
         return self._map_row_to_entity(rows[0])
 
     def get_all(self) -> List[Cepat]:
@@ -29,14 +30,16 @@ class PgCepatRepository(CepatRepositoryPort):
         rows = call_fn_rows("public.f_busca_cepat_por_id", [cepat_id])
         return self._map_row_to_entity(rows[0]) if rows else None
 
-    def update(self, cepat_id: int, nombre: str) -> Optional[Cepat]:
+    def update(self, cepat_id: int, nombre: str, id_usuario: int) -> Optional[Cepat]:
         """ Llama a f_actualiza_cepat_por_id """
-        rows = call_fn_rows("public.f_actualiza_cepat_por_id", [cepat_id, nombre])
-        # La función devuelve el registro actualizado
+
+        rows = call_fn_rows(
+            "public.f_actualiza_cepat_por_id",
+            [cepat_id, nombre, id_usuario]
+        )
         return self._map_row_to_entity(rows[0]) if rows else None
 
     def delete(self, cepat_id: int) -> Optional[Cepat]:
         """ Llama a f_elimina_cepat_por_id """
         rows = call_fn_rows("public.f_elimina_cepat_por_id", [cepat_id])
-        # La función devuelve el registro eliminado
         return self._map_row_to_entity(rows[0]) if rows else None
