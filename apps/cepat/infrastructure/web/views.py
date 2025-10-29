@@ -37,7 +37,8 @@ def list_create_view(request):
 
         try:
             nombre = input_serializer.validated_data['nombre']
-            new_cepat = service.create_cepat(nombre)  # <-- USA EL SERVICIO
+            id_usuario = input_serializer.validated_data['id_usuario']
+            new_cepat = service.create_cepat(nombre,id_usuario)  # <-- USA EL SERVICIO
 
             output_serializer = CepatSerializer(new_cepat)
             return Response(output_serializer.data, status=status.HTTP_201_CREATED)
@@ -72,7 +73,8 @@ def detail_update_delete_view(request, cepat_id: int):
         service = CepatCommandsService(repo)
 
         nombre = input_serializer.validated_data['nombre']
-        updated_cepat = service.update_cepat(cepat_id, nombre)  # <-- USA EL SERVICIO
+        id_usuario = input_serializer.validated_data['id_usuario']
+        updated_cepat = service.update_cepat(cepat_id, nombre,id_usuario)  # <-- USA EL SERVICIO
 
         if not updated_cepat:
             return Response({"error": "Cepat no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
