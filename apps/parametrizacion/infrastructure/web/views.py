@@ -6,9 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiExample
 
-from .serializer import ParametrizacionSerializer
+from .serializer import ParametrizacionSerializer, EstadoSerializer, InstitucionPorEstadoSerializer
 from apps.parametrizacion.application.selectors.parametrizacion_queries import (
-    get_all_parametrizaciones, get_parametrizaciones_by_tema
+    get_all_parametrizaciones, get_parametrizaciones_by_tema, get_estado_param, get_instituciones_por_estado
 )
 
 from rest_framework.permissions import AllowAny
@@ -50,4 +50,34 @@ class ParametrizacionViewSet(viewsets.ViewSet):
             return Response({"error": "id_tema debe ser un número entero"}, status=status.HTTP_400_BAD_REQUEST)
         result = get_parametrizaciones_by_tema(id_tema)
         serializer = ParametrizacionSerializer(result, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="estados")
+    def estados(self, request):
+        result = get_estado_param()
+        serializer = EstadoSerializer(result, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Obtener instituciones por entidad federativa",
+        description="Devuelve todas las instituciones asociadas a una entidad federativa específica.",
+        responses={200: InstitucionPorEstadoSerializer(many=True)},
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="instituciones/estado/(?P<id_entidad_federativa>[^/.]+)"
+    )
+    def instituciones_por_estado(self, request, id_entidad_federativa=None):
+        """
+        Endpoint GET /parametrizaciones/instituciones/estado/<id_entidad_federativa>/
+        """
+        try:
+            id_entidad_federativa = int(id_entidad_federativa)
+        except (TypeError, ValueError):
+            return Response({"error": "id_entidad_federativa debe ser un número entero"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        result = get_instituciones_por_estado(id_entidad_federativa)
+        serializer = InstitucionPorEstadoSerializer(result, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
