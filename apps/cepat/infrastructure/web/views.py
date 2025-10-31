@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.exceptions import PermissionDenied
 
 # Selectors (Queries) - SÓLO PARA GET
 from ...application.selectors.cepat_queries import get_all_cepat, get_cepat_by_id
@@ -10,7 +11,7 @@ from ...application.services.cepat_commands import CepatCommandsService
 from ...infrastructure.repositories.pg_utils import PgCepatRepository
 
 # Serializers
-from .serializer import CepatSerializer, CepatInputSerializer
+from .serializer import CepatSerializer, CepatInputSerializer, CepatPatchUsuarioSerializer, CepatPatchResultSerializer
 
 
 @api_view(['GET', 'POST'])
@@ -20,8 +21,7 @@ def list_create_view(request):
     """
     if request.method == 'GET':
         # --- LECTURA ---
-        # 1. Llama al SELECTOR
-        cepats = get_all_cepat()
+        cepats = get_all_cepat(request.user)
         serializer = CepatSerializer(cepats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -31,71 +31,117 @@ def list_create_view(request):
         if not input_serializer.is_valid():
             return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # 1. Llama al SERVICIO
         repo = PgCepatRepository()
         service = CepatCommandsService(repo)
 
         try:
             nombre = input_serializer.validated_data['nombre']
             id_usuario = input_serializer.validated_data['id_usuario']
-            new_cepat = service.create_cepat(nombre,id_usuario)  # <-- USA EL SERVICIO
+
+            new_cepat = service.create_cepat(
+                request.user,
+                nombre,
+                id_usuario
+            )
 
             output_serializer = CepatSerializer(new_cepat)
             return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             return Response({"error": f"Error al crear: {str(e)}"}, status=status.HTTP_409_CONFLICT)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 def detail_update_delete_view(request, cepat_id: int):
     """
     Vista para Obtener (GET), Actualizar (PUT) o Eliminar (DELETE).
     """
 
+    # --- LECTURA (GET) ---
     if request.method == 'GET':
-        # --- LECTURA ---
-        # 1. Llama al SELECTOR
-        cepat = get_cepat_by_id(cepat_id)
+        cepat = get_cepat_by_id(cepat_id, request.user)
         if not cepat:
             return Response({"error": "Cepat no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = CepatSerializer(cepat)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # --- ESCRITURA (PUT) ---
     elif request.method == 'PUT':
-        # --- ESCRITURA ---
         input_serializer = CepatInputSerializer(data=request.data)
         if not input_serializer.is_valid():
             return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # 1. Llama al SERVICIO
         repo = PgCepatRepository()
         service = CepatCommandsService(repo)
 
-        nombre = input_serializer.validated_data['nombre']
-        id_usuario = input_serializer.validated_data['id_usuario']
-        updated_cepat = service.update_cepat(cepat_id, nombre,id_usuario)  # <-- USA EL SERVICIO
+        try:
+            nombre = input_serializer.validated_data['nombre']
+            id_usuario = input_serializer.validated_data['id_usuario']
 
-        if not updated_cepat:
-            return Response({"error": "Cepat no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
+            updated_cepat = service.update_cepat(
+                request.user,
+                cepat_id,
+                nombre,
+                id_usuario
+            )
 
-        serializer = CepatSerializer(updated_cepat)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            if not updated_cepat:
+                return Response({"error": "Cepat no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = CepatSerializer(updated_cepat)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"error": f"Error al actualizar: {str(e)}"}, status=status.HTTP_409_CONFLICT)
+
+    elif request.method == 'PATCH':
+        input_serializer = CepatPatchUsuarioSerializer(data=request.data)
+        if not input_serializer.is_valid():
+            return Response(input_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        repo = PgCepatRepository()
+        service = CepatCommandsService(repo)
+
+        try:
+            id_usuario = input_serializer.validated_data['id_usuario']
+
+            updated_cepat_result = service.update_cepat_usuario(
+                request.user,
+                cepat_id,
+                id_usuario
+            )
+
+            if not updated_cepat_result:
+                return Response({"error": "Cepat no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = CepatPatchResultSerializer(updated_cepat_result)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"error": f"Error al actualizar: {str(e)}"}, status=status.HTTP_409_CONFLICT)
 
     elif request.method == 'DELETE':
-        # --- ESCRITURA ---
-        # 1. Llama al SERVICIO
+
+        cepat_existente = get_cepat_by_id(cepat_id, request.user)
+        if not cepat_existente:
+            return Response({"error": "Cepat no encontrado para eliminar"}, status=status.HTTP_404_NOT_FOUND)
+
         repo = PgCepatRepository()
         service = CepatCommandsService(repo)
 
-        deleted_cepat = service.delete_cepat(cepat_id)  # <-- USA EL SERVICIO
+        try:
+            service.delete_cepat(request.user, cepat_id)
 
-        if not deleted_cepat:
-            return Response({"error": "Cepat no encontrado para eliminar"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-from django.shortcuts import render
-
-# Create your views here.
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"error": f"Error al eliminar: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
