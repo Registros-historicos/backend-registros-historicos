@@ -14,3 +14,4 @@ class Institucion:
     tipo_institucion_param: int
     id_cepat: Optional[int]
     ciudad_param: int
+    id_usuario: Optional[int]
