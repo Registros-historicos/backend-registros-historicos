@@ -186,7 +186,7 @@ class ConsultaViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        resultado = registros_por_mes_selector(anio)
+        resultado = registros_por_mes_selector(anio, request.user)
         return Response(resultado, status=status.HTTP_200_OK)
     
     
@@ -233,7 +233,7 @@ class ConsultaViewSet(viewsets.ViewSet):
             )
 
         try:
-            resultado = registros_por_periodo_selector(fecha_inicio, fecha_fin)
+            resultado = registros_por_periodo_selector(fecha_inicio, fecha_fin, request.user)
             serializer = RegistrosPorPeriodoSerializer(resultado, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
