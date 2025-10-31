@@ -6,7 +6,7 @@ from .views import (
     list_create_users_view,
     user_detail_update_delete_view,
     user_by_type_view,
-    MeView
+    MeView, user_delate_by_id_view
 )
 from .auth_views import LoginView, RefreshView
 
@@ -27,6 +27,11 @@ urlpatterns = [
         'tipo/<int:tipo>/',
         user_by_type_view,
         name='user-by-type'
+    ),
+    path(
+        'delete/<int:id_user>/',
+        user_delate_by_id_view,
+        name='user_delate_by_id'
     ),
 
     # Ruta para /users/usuario@ejemplo.com/
