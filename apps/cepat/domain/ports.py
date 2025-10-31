@@ -1,5 +1,6 @@
 from typing import Protocol, Optional, List
-from .entities import Cepat
+from .entities import Cepat, CepatPatchResult
+
 
 class CepatRepositoryPort(Protocol):
     """
@@ -25,4 +26,8 @@ class CepatRepositoryPort(Protocol):
 
     def delete(self, cepat_id: int) -> Optional[Cepat]:
         """ Llama a f_elimina_cepat_por_id """
+        ...
+
+    def update_usuario(self, cepat_id: int, id_usuario: int) -> Optional[CepatPatchResult]:
+        """ Llama a f_actualiza_cepat_usuario_por_id """
         ...

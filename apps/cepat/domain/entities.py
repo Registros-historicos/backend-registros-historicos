@@ -10,3 +10,12 @@ class Cepat:
     id_cepat: int
     nombre: str
     id_usuario: int
+
+@dataclass
+class CepatPatchResult:
+    """
+    Representa el resultado parcial devuelto al actualizar
+    el usuario de un Cepat (f_actualiza_cepat_usuario_por_id).
+    """
+    id_cepat: int
+    id_usuario: int

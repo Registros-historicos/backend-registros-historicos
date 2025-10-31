@@ -1,10 +1,10 @@
 from django.db import IntegrityError
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.core.exceptions import PermissionDenied
 from apps.users.application.selectors.get_all_users import get_all_users
 from apps.users.application.selectors.get_user_by_email import list_users
 from apps.users.application.selectors.create_user import create_new_user
@@ -24,10 +24,8 @@ def list_create_users_view(request):
     Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
     """
     if request.method == 'GET':
-        # 1. Llamar al selector para obtener todos los usuarios
-        usuarios_list = get_all_users()
+        usuarios_list = get_all_users(request.user)
 
-        # 2. Serializar los datos
         serializer = UsuarioSerializer(usuarios_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -67,28 +65,25 @@ def list_create_users_view(request):
 
             )
 
-            # --- CAMBIO CLAVE 1: Llama al selector correcto ---
-
-            new_user_obj = create_new_user(user_entity, make_password(raw_password))
+            new_user_obj = create_new_user(
+                request.user,
+                user_entity,
+                make_password(raw_password)
+            )
 
             if not new_user_obj:
                 return Response({"error": "No se pudo crear el usuario."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            # --- CAMBIO CLAVE 2: Serializa el objeto devuelto por la BD ---
 
             response_serializer = UsuarioSerializer(new_user_obj)
 
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
-        # --- CAMBIO CLAVE 3: Manejo de error específico ---
-
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
         except IntegrityError:
-
             return Response({"error": f"El correo '{data['correo']}' ya existe."}, status=status.HTTP_409_CONFLICT)
-
         except Exception as e:
-
             return Response({"error": f"Error inesperado al crear usuario: {str(e)}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -102,38 +97,50 @@ def user_detail_update_delete_view(request, correo: str):
     """
 
     if request.method == 'GET':
-        usuario = list_users(correo=correo)
+        usuario = list_users(correo=correo, user=request.user)
         if not usuario:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(usuario)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'PUT':
-        updated_user = update_user(correo=correo, data=request.data)
-        if not updated_user:
-            return Response({"error": "Usuario no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = UsuarioSerializer(updated_user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            updated_user = update_user(request.user, correo=correo, data=request.data)
+            if not updated_user:
+                return Response({"error": "Usuario no encontrado para actualizar"}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UsuarioSerializer(updated_user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        # ...
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"error": f"Error inesperado al actualizar: {str(e)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     elif request.method == 'DELETE':
-        deactivated_user = deactivate_user_by_email(correo)
-        if not deactivated_user:
-            return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = UsuarioSerializer(deactivated_user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            deactivated_user = deactivate_user_by_email(correo, request.user)
+            if not deactivated_user:
+                return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
+            serializer = UsuarioSerializer(deactivated_user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            return Response({"error": f"Error inesperado al deshabilitar: {str(e)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class MeView(APIView):
     """
     Devuelve los datos del usuario autenticado (según el JWT).
-    Compatible con tu JWTAuth (request.user es un objeto con claims).
+    (Este código no necesita cambios)
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        u = request.user  # JWTUser con is_authenticated=True
+        u = request.user
         data = {
             "id_usuario": getattr(u, "id_usuario", getattr(u, "id", None)) or getattr(u, "sub", None),
             "correo": getattr(u, "correo", getattr(u, "email", None)),
@@ -141,7 +148,6 @@ class MeView(APIView):
             "nombre": getattr(u, "nombre", None),
         }
 
-        # Si además tu autenticador deja el payload en request.auth, complementar:
         claims = getattr(request, "auth", None)
         if isinstance(claims, dict):
             data["id_usuario"] = data["id_usuario"] or claims.get("sub")
@@ -153,12 +159,13 @@ class MeView(APIView):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_by_type_view(request, tipo: int):
     """
     Vista para Obtener una LISTA de usuarios por su tipo (GET).
     """
     if request.method == 'GET':
-        usuarios_list = get_users_by_type_list(tipo)
+        usuarios_list = get_users_by_type_list(tipo, request.user)
         serializer = UsuarioSerializer(usuarios_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -168,11 +175,17 @@ def user_by_type_view(request, tipo: int):
 def user_delate_by_id_view(request, id_user: int):
     """
     Vista para eliminar a un usuario específico por su ID (DELETE).
+    (Se conserva el 'delate' original)
     """
     if request.method == 'DELETE':
         try:
-            delete_users_by_id(id_user)
+            delete_users_by_id(id_user, request.user)
+
+        except PermissionDenied as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
         except RuntimeError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Error inesperado: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "Usuario eliminado correctamente"}, status=status.HTTP_200_OK)

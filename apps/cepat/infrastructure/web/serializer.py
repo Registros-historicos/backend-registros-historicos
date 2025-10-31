@@ -17,3 +17,17 @@ class CepatInputSerializer(serializers.Serializer):
     nombre = serializers.CharField(max_length=255, required=True)
     id_usuario = serializers.IntegerField(required=True)
 
+class CepatPatchUsuarioSerializer(serializers.Serializer):
+    """
+    Serializador para VALIDAR la entrada de un PATCH (parcial). (Entrada)
+    Solo espera el id_usuario.
+    """
+    id_usuario = serializers.IntegerField(required=True)
+
+class CepatPatchResultSerializer(serializers.Serializer):
+    """
+    Serializador de SALIDA para el resultado del PATCH.
+    Muestra solo id_cepat y id_usuario.
+    """
+    id_cepat = serializers.IntegerField(read_only=True)
+    id_usuario = serializers.IntegerField(read_only=True)
