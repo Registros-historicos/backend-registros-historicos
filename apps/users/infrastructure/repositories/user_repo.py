@@ -2,6 +2,8 @@ from typing import Iterable, Optional, List
 from apps.users.domain.entities import Usuario
 from apps.users.domain.ports import UserRepositoryPort
 from .pg_utils import call_fn_one, call_fn_rows, exec_fn_void
+from django.db import connection
+
 
 class PgUserRepository(UserRepositoryPort):
 
@@ -83,7 +85,6 @@ class PgUserRepository(UserRepositoryPort):
 
         r = rows[0]
 
-
         if 'estatus_param' in r:
             r['estatus'] = r.pop('estatus_param')
 
@@ -122,20 +123,26 @@ class PgUserRepository(UserRepositoryPort):
             usuarios.append(Usuario(**r))
         return usuarios
 
-    def get_users_by_type(self, tipo: int) -> List[Usuario]:  # <-- CAMBIO 1: Devolver List[Usuario]
+    def get_users_by_type(self, tipo: int) -> List[Usuario]:
         """
         Busca TODOS los usuarios por su tipo y devuelve una LISTA de objetos Usuario.
         """
         rows = call_fn_rows(
             "public.f_busca_usuario_por_tipo_usuario",
-            [tipo]  # <-- CAMBIO 2: Usar 'tipo' (ver punto 3)
+            [tipo]
         )
-
-        # --- CAMBIO 3: Iterar para crear una lista ---
         usuarios = []
         for r in rows:
             if 'estatus_param' in r:
                 r['estatus'] = r.pop('estatus_param')
             usuarios.append(Usuario(**r))
 
-        return usuarios  # <-- CAMBIO 4: Devolver la lista completa
+        return usuarios
+
+    def delete_user_by_id(self, id_user: int) -> None:
+        if not id_user:
+            raise ValueError("El id del usuario no puede estar vacío o ser None")
+
+        sql = f"SELECT public.f_elimina_usuario_by_id({id_user})"
+        with connection.cursor() as cur:
+            cur.execute(sql)

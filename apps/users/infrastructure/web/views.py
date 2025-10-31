@@ -11,6 +11,7 @@ from apps.users.application.selectors.create_user import create_new_user
 from apps.users.application.selectors.update_user_by_email import update_user
 from apps.users.application.selectors.deactivate_user_by_email import deactivate_user_by_email
 from .serializer import UsuarioSerializer, UserCreateSerializer
+from ...application.selectors.delate_user_by_id import delete_users_by_id
 from ...application.selectors.get_users_by_type import get_users_by_type_list
 from ...domain.entities import Usuario
 from django.contrib.auth.hashers import make_password
@@ -122,6 +123,8 @@ def user_detail_update_delete_view(request, correo: str):
             return Response({"error": "Usuario no encontrado para deshabilitar"}, status=status.HTTP_404_NOT_FOUND)
         serializer = UsuarioSerializer(deactivated_user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class MeView(APIView):
     """
     Devuelve los datos del usuario autenticado (según el JWT).
@@ -148,8 +151,9 @@ class MeView(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
-def user_by_type_view(request, tipo: int):  # <-- CAMBIO 1: El argumento debe ser 'tipo' (ver punto 3)
+def user_by_type_view(request, tipo: int):
     """
     Vista para Obtener una LISTA de usuarios por su tipo (GET).
     """
@@ -158,3 +162,17 @@ def user_by_type_view(request, tipo: int):  # <-- CAMBIO 1: El argumento debe se
         serializer = UsuarioSerializer(usuarios_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def user_delate_by_id_view(request, id_user: int):
+    """
+    Vista para eliminar a un usuario específico por su ID (DELETE).
+    """
+    if request.method == 'DELETE':
+        try:
+            delete_users_by_id(id_user)
+        except RuntimeError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Usuario eliminado correctamente"}, status=status.HTTP_200_OK)
