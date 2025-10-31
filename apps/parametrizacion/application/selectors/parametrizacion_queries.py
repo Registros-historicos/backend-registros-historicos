@@ -15,3 +15,7 @@ def get_estado_param():
 def get_instituciones_por_estado(id_entidad_federativa: int):
     repo = ParametrizacionRepository()
     return repo.get_instituciones_por_estado(id_entidad_federativa)
+
+def get_estados_by_id_user(id_usuario: int):
+    repo = ParametrizacionRepository()
+    return repo.get_estados_by_id_user(id_usuario)

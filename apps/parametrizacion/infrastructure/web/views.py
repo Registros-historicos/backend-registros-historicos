@@ -8,7 +8,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes,
 
 from .serializer import ParametrizacionSerializer, EstadoSerializer, InstitucionPorEstadoSerializer
 from apps.parametrizacion.application.selectors.parametrizacion_queries import (
-    get_all_parametrizaciones, get_parametrizaciones_by_tema, get_estado_param, get_instituciones_por_estado
+    get_all_parametrizaciones, get_parametrizaciones_by_tema, get_estado_param, get_instituciones_por_estado,
+    get_estados_by_id_user
 )
 
 from rest_framework.permissions import AllowAny
@@ -69,9 +70,6 @@ class ParametrizacionViewSet(viewsets.ViewSet):
         url_path="instituciones/estado/(?P<id_entidad_federativa>[^/.]+)"
     )
     def instituciones_por_estado(self, request, id_entidad_federativa=None):
-        """
-        Endpoint GET /parametrizaciones/instituciones/estado/<id_entidad_federativa>/
-        """
         try:
             id_entidad_federativa = int(id_entidad_federativa)
         except (TypeError, ValueError):
@@ -81,3 +79,19 @@ class ParametrizacionViewSet(viewsets.ViewSet):
         result = get_instituciones_por_estado(id_entidad_federativa)
         serializer = InstitucionPorEstadoSerializer(result, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="estados/(?P<id_usuario>[^/.]+)"
+    )
+    def estados_by_id_user(self, request, id_usuario=None):
+        try:
+            id_user = int(id_usuario)
+        except (TypeError, ValueError):
+            return Response({"error": "id_entidad_federativa debe ser un número entero"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        result = get_estados_by_id_user(id_user)
+        serializer = EstadoSerializer(result, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

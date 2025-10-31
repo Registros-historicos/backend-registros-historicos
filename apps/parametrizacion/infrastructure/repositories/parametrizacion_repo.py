@@ -30,3 +30,9 @@ class ParametrizacionRepository(ParametrizacionRepositoryPort):
             )
             rows = cursor.fetchall()
         return [InstitucionPorEstado(*row) for row in rows]
+
+    def get_estados_by_id_user(self, id_usuario: int):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id_entidad_federativa, nombre_entidad FROM f_buscar_estados_por_usuario(%s);", [id_usuario])
+            rows = cursor.fetchall()
+        return [Estado(*row) for row in rows]
