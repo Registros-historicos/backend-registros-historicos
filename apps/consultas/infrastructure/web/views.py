@@ -38,7 +38,7 @@ from apps.users.application.services.permissions import HasRole
 class ConsultaViewSet(viewsets.ViewSet):
     
     permission_classes = [IsAuthenticated, HasRole]
-    allowed_roles = [35, 37] # Permite acceso a Administrador (35) y a CEPAT (37)
+    allowed_roles = [35, 36, 37] # Permite acceso a Administrador (35), Coordinador (36) y CEPAT (37)
     """
     ViewSet para tableros de consultas.
     """
@@ -69,7 +69,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=["get"])
     def categoria_investigadores_view(self, request):
-        resultado = conteo_investigadores_por_categoria_selector()
+        resultado = conteo_investigadores_por_categoria_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
         summary="registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
         responses={200: CategoriaInvestigadorSerializer(many=True)},
@@ -99,7 +99,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def registros_por_sexo_view(self, request):
-        resultado = registros_por_sexo_selector()
+        resultado = registros_por_sexo_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
     
     @extend_schema(
