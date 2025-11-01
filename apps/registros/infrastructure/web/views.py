@@ -20,6 +20,13 @@ from ...application.selectors.search_records import search_records
 from ...application.selectors.get_record_by_id import get_record_by_id
 from ...application.selectors.get_record_by_expediente import get_record_by_expediente
 
+from apps.registros.application.services.bulk_indautor_service import BulkIndautorService
+from apps.registros.application.services.bulk_impi_service import BulkImpiService
+from apps.registros.infrastructure.repositories.investigadores_repositorio import PostgresInvestigadorRepository
+
+bulk_service = BulkIndautorService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
+
+
 service = RegistroService(PostgresRegistroRepository())
 
 class RegistroViewSet(viewsets.ViewSet):
@@ -157,3 +164,49 @@ class RegistroViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         return Response(registro, status=status.HTTP_200_OK)
+
+
+    @extend_schema(summary="Carga masiva INDAUTOR desde Excel (multi-hojas)")
+    @action(detail=False, methods=["post"], url_path="indautor-bulk")
+    def indautor_bulk(self, request):
+        file = request.FILES.get("file")
+        if not file:
+            return Response({"error": "Debe adjuntar un archivo Excel (.xlsx)."}, status=status.HTTP_400_BAD_REQUEST)
+
+        id_usuario = int(request.data.get("id_usuario", 1))
+        hojas = request.data.get("hojas")  # puede ser "2022,2023" o "2020-2024"
+        
+        print("Iniciando carga masiva INDAUTOR por usuario:", id_usuario)
+        print("Hojas a cargar:", hojas)
+
+        service = BulkIndautorService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
+        result = service.execute(file, id_usuario, hojas_input=hojas)
+
+        print("Resultado de la carga masiva INDAUTOR:", result)
+
+        status_code = status.HTTP_207_MULTI_STATUS if result.get("errores") else status.HTTP_201_CREATED
+        return Response(result, status=status_code)
+
+
+    @extend_schema(summary="Carga masiva IMPI desde Excel (multi-hojas)")
+    @action(detail=False, methods=["post"], url_path="impi-bulk")
+    def impi_bulk(self, request):
+        file = request.FILES.get("file")
+        if not file:
+            return Response({"error": "Debe adjuntar un archivo Excel (.xlsx)."}, status=status.HTTP_400_BAD_REQUEST)
+
+        id_usuario = int(request.data.get("id_usuario", 1))
+        print ("Archivo recibido para carga masiva IMPI:", file.name)
+        hojas = request.data.get("hojas")  # puede ser "2022,2023" o "2020-2024"
+        
+        
+        print("Iniciando carga masiva IMPI por usuario:", id_usuario)
+        print("Hojas a cargar:", hojas)
+
+        service = BulkImpiService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
+        result = service.execute(file, id_usuario, hojas_input=hojas)
+
+        print("Resultado de la carga masiva IMPI:", result)
+
+        status_code = status.HTTP_207_MULTI_STATUS if result.get("errores") else status.HTTP_201_CREATED
+        return Response(result, status=status_code)

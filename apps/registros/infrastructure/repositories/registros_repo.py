@@ -3,7 +3,7 @@ from apps.registros.domain.entities import Registro
 from apps.registros.domain.ports import RegistroRepository
 from psycopg2.extensions import AsIs
 from django.db import connection, transaction
-
+from apps.registros.infrastructure.repositories.pg_utils import run_query
 
 class PostgresRegistroRepository(RegistroRepository):
 
@@ -188,3 +188,85 @@ class PostgresRegistroRepository(RegistroRepository):
                 columns = [col[0] for col in cursor.description]
                 return dict(zip(columns, row))
             return None
+
+
+
+    def upsert(self, reg):
+        """
+        Inserta o actualiza un registro en la tabla 'registro' con base en 'no_expediente'.
+        """
+        query = """
+        INSERT INTO registro (
+            no_expediente, titulo, descripcion, fec_solicitud,
+            no_titulo, estatus_param, rama_param, medio_ingreso_param,
+            tecnologico_origen, anio_renovacion, id_subsector,
+            fec_expedicion, archivo, observaciones,
+            tipo_registro_param, tipo_ingreso_param, id_usuario
+        ) VALUES (
+            %(no_expediente)s, %(titulo)s, %(descripcion)s, %(fec_solicitud)s,
+            %(no_titulo)s, %(estatus_param)s, %(rama_param)s, %(medio_ingreso_param)s,
+            %(tecnologico_origen)s, %(anio_renovacion)s, %(id_subsector)s,
+            %(fec_expedicion)s, %(archivo)s, %(observaciones)s,
+            %(tipo_registro_param)s, %(tipo_ingreso_param)s, %(id_usuario)s
+        )
+        ON CONFLICT (no_expediente)
+        DO UPDATE SET
+            titulo = EXCLUDED.titulo,
+            descripcion = EXCLUDED.descripcion,
+            fec_solicitud = EXCLUDED.fec_solicitud,
+            no_titulo = EXCLUDED.no_titulo,
+            estatus_param = EXCLUDED.estatus_param,
+            rama_param = EXCLUDED.rama_param,
+            medio_ingreso_param = EXCLUDED.medio_ingreso_param,
+            tecnologico_origen = EXCLUDED.tecnologico_origen,
+            anio_renovacion = EXCLUDED.anio_renovacion,
+            id_subsector = EXCLUDED.id_subsector,
+            fec_expedicion = EXCLUDED.fec_expedicion,
+            archivo = EXCLUDED.archivo,
+            observaciones = EXCLUDED.observaciones,
+            tipo_registro_param = EXCLUDED.tipo_registro_param,
+            tipo_ingreso_param = EXCLUDED.tipo_ingreso_param,
+            id_usuario = EXCLUDED.id_usuario
+        RETURNING *, (xmax = 0) AS created;
+        """
+
+        params = {
+            "no_expediente": reg.no_expediente,
+            "titulo": reg.titulo,
+            "descripcion": reg.descripcion,
+            "fec_solicitud": reg.fec_solicitud,
+            "no_titulo": reg.no_titulo,
+            "estatus_param": reg.estatus_param,
+            "rama_param": reg.rama_param,
+            "medio_ingreso_param": reg.medio_ingreso_param,
+            "tecnologico_origen": reg.tecnologico_origen,
+            "anio_renovacion": reg.anio_renovacion,
+            "id_subsector": reg.id_subsector,
+            "fec_expedicion": reg.fec_expedicion,
+            "archivo": reg.archivo,
+            "observaciones": reg.observaciones,
+            "tipo_registro_param": reg.tipo_registro_param,
+            "tipo_ingreso_param": reg.tipo_ingreso_param,
+            "id_usuario": reg.id_usuario,
+        }
+
+        return run_query(query, params, fetchone=True)
+
+    def get_by_expediente(self, no_expediente: str):
+        """
+        Retorna un registro por número de expediente.
+        """
+        query = "SELECT * FROM registro WHERE no_expediente = %s;"
+        return run_query(query, [no_expediente], fetchone=True)
+
+    def vincular_investigador(self, id_registro: int, id_investigador: int):
+        """
+        Inserta la relación entre registro e investigador (por id_investigador).
+        Evita duplicados con ON CONFLICT.
+        """
+        query = """
+            INSERT INTO registro_investigador (id_registro, id_investigador)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING;
+        """
+        run_query(query, [id_registro, id_investigador])
