@@ -57,3 +57,31 @@ def get_cepat_by_id(cepat_id: int, user) -> Optional[Cepat]:
     else:
         # 3. Otro Rol: No debe ver ninguno
         return None
+
+
+def get_cepat_by_id_user(id_user: int, user) -> Optional[Cepat]:
+    """
+    Selector (Query) para obtener un Cepat por su ID.
+    Filtrado por rol:
+     - Admin (35) y Cepat (37).
+     - Otro: No hay permisos.
+    """
+    repo = PgCepatRepository()
+
+    id_usuario = getattr(user, "id", None)
+    if not id_usuario:
+        return None
+
+    context = resolve_user_context(int(id_usuario))
+    if not context:
+        return None
+
+    rol_id = context["rol_id"]
+
+    # MODIFICADO: Admin y Cepat tienen los mismos permisos
+    if rol_id == 35 or rol_id == 37:
+        # Pueden buscar CUALQUIER id_cepat
+        return repo.get_cepat_by_id_user(id_user)
+    else:
+        # 3. Otro Rol: No debe ver ninguno
+        return None
