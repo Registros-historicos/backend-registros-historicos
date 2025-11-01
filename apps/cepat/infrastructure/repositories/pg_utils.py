@@ -17,7 +17,7 @@ class PgCepatRepository(CepatRepositoryPort):
         """Mapea un diccionario de fila de BD a la entidad CepatPatchResult."""
         return CepatPatchResult(**row)
 
-    def create(self, nombre: str, id_usuario: int) -> Cepat:
+    def create(self, nombre: str, id_usuario: Optional[int]) -> Cepat:
         """ Llama a f_inserta_cepat """
 
         rows = call_fn_rows("public.f_inserta_cepat", [nombre, id_usuario])
@@ -34,7 +34,7 @@ class PgCepatRepository(CepatRepositoryPort):
         rows = call_fn_rows("public.f_busca_cepat_por_id", [cepat_id])
         return self._map_row_to_entity(rows[0]) if rows else None
 
-    def update(self, cepat_id: int, nombre: str, id_usuario: int) -> Optional[Cepat]:
+    def update(self, cepat_id: int, nombre: str, id_usuario: Optional[int]) -> Optional[Cepat]:
         """ Llama a f_actualiza_cepat_por_id """
 
         rows = call_fn_rows(

@@ -28,7 +28,7 @@ class CepatCommandsService:
         # Solo Admin y Cepat pueden ejecutar comandos
         return rol_id == 35 or rol_id == 37
 
-    def create_cepat(self, user, nombre: str, id_usuario: int) -> Cepat:
+    def create_cepat(self, user, nombre: str, id_usuario: Optional[int] = None) -> Cepat:
         """
         Caso de uso para crear un nuevo Cepat.
         Lanza PermissionDenied si no es Admin (35) o Cepat (37).
@@ -38,7 +38,7 @@ class CepatCommandsService:
 
         return self.repo.create(nombre, id_usuario)
 
-    def update_cepat(self, user, cepat_id: int, nombre: str, id_usuario: int) -> Optional[Cepat]:
+    def update_cepat(self, user, cepat_id: int, nombre: str, id_usuario: Optional[int] = None) -> Optional[Cepat]:
         """
         Caso de uso para actualizar un Cepat.
         Lanza PermissionDenied si no es Admin (35) o Cepat (37).

@@ -8,7 +8,7 @@ class CepatRepositoryPort(Protocol):
     La lógica de negocio depende de esta interfaz, no de la implementación.
     """
 
-    def create(self, nombre: str, id_usuario: int) -> Cepat:
+    def create(self, nombre: str, id_usuario: Optional[int]) -> Cepat:
         """ Llama a f_inserta_cepat """
         ...
 
@@ -20,7 +20,7 @@ class CepatRepositoryPort(Protocol):
         """ Llama a f_busca_cepat_por_id """
         ...
 
-    def update(self, cepat_id: int, nombre: str, id_usuario: int) -> Optional[Cepat]:
+    def update(self, cepat_id: int, nombre: str, id_usuario: Optional[int]) -> Optional[Cepat]:
         """ Llama a f_actualiza_cepat_por_id """
         ...
 
