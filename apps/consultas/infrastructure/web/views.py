@@ -34,6 +34,7 @@ from apps.consultas.infrastructure.web.serializer import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
 
+
 class ConsultaViewSet(viewsets.ViewSet):
     
     permission_classes = [IsAuthenticated, HasRole]
@@ -79,7 +80,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def instituciones_top10_view(self, request):
-        resultado = instituciones_top10()
+        resultado = instituciones_top10(user=request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -126,7 +127,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def instituciones_all_view(self, request):
-        resultado = instituciones_all()
+        resultado = instituciones_all(user=request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
