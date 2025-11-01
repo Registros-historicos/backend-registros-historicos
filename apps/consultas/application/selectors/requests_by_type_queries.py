@@ -36,7 +36,7 @@ def requests_by_type_selector(tipo_registro_param: int, user):
         rol_id = context["rol_id"]
         id_cepat = context.get("id_cepat")
         id_institucion = context.get("id_institucion")
-      
+
         if rol_id == 35:
             cursor.execute("SELECT * FROM f_cuenta_registros_por_tipo(%s);", [tipo_registro_param])
         elif rol_id == 37:
