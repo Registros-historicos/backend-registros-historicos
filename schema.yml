@@ -1,0 +1,1558 @@
+openapi: 3.0.3
+info:
+  title: API de Consultas y Registros IMPI/INDAUTOR
+  version: 1.0.0
+  description: Documentación interactiva de la API del sistema de consultas y registros.
+paths:
+  /api/cepat/:
+    get:
+      operationId: api_cepat_retrieve
+      description: Vista para Listar (GET) o Crear (POST).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_cepat_create
+      description: Vista para Listar (GET) o Crear (POST).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/cepat/{cepat_id}/:
+    get:
+      operationId: api_cepat_retrieve_2
+      description: Vista para Obtener (GET), Actualizar (PUT) o Eliminar (DELETE).
+      parameters:
+      - in: path
+        name: cepat_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_cepat_update
+      description: Vista para Obtener (GET), Actualizar (PUT) o Eliminar (DELETE).
+      parameters:
+      - in: path
+        name: cepat_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    patch:
+      operationId: api_cepat_partial_update
+      description: Vista para Obtener (GET), Actualizar (PUT) o Eliminar (DELETE).
+      parameters:
+      - in: path
+        name: cepat_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_cepat_destroy
+      description: Vista para Obtener (GET), Actualizar (PUT) o Eliminar (DELETE).
+      parameters:
+      - in: path
+        name: cepat_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/institucion/{id_institucion}/actualizar-id-cepat/:
+    put:
+      operationId: api_institucion_actualizar_id_cepat_update
+      description: Vista para Actualizar el id_cepat de una institución (PUT).
+      parameters:
+      - in: path
+        name: id_institucion
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/institucion/con-cepat/:
+    get:
+      operationId: api_institucion_con_cepat_retrieve
+      description: Vista para Listar todas las instituciones que coinciden con un
+        'id_cepat' (GET).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/investigadores/adscripciones/by-investigador/:
+    get:
+      operationId: api_investigadores_adscripciones_by_investigador_list
+      description: |-
+        ViewSet para gestionar Investigadores y sus Adscripciones.
+        Usa funciones Postgres directamente (sin ORM).
+      summary: Obtener adscripciones por investigador
+      parameters:
+      - in: query
+        name: id_investigador
+        schema:
+          type: integer
+        description: ID del investigador
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Adscripcion'
+          description: ''
+  /api/investigadores/adscripciones/create/:
+    post:
+      operationId: api_investigadores_adscripciones_create_create
+      description: Asocia un investigador con una institución mediante una adscripción.
+      summary: Crear una adscripción para un investigador
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdscripcionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdscripcionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdscripcionRequest'
+        required: true
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adscripcion'
+          description: ''
+  /api/investigadores/investigadores/all/:
+    get:
+      operationId: api_investigadores_investigadores_all_list
+      description: |-
+        ViewSet para gestionar Investigadores y sus Adscripciones.
+        Usa funciones Postgres directamente (sin ORM).
+      summary: Obtener todos los investigadores
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Investigador'
+          description: ''
+  /api/investigadores/investigadores/create/:
+    post:
+      operationId: api_investigadores_investigadores_create_create
+      description: Crea un investigador usando la función f_crear_investigador de
+        Postgres.
+      summary: Crear un nuevo investigador
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+        required: true
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investigador'
+          description: ''
+  /api/investigadores/investigadores/delete/:
+    delete:
+      operationId: api_investigadores_investigadores_delete_destroy
+      description: Elimina un investigador y sus adscripciones asociadas.
+      summary: Eliminar un investigador
+      parameters:
+      - in: query
+        name: id_investigador
+        schema:
+          type: integer
+        description: ID del investigador a eliminar
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                message: Investigador eliminado
+          description: ''
+  /api/investigadores/investigadores/detail/:
+    get:
+      operationId: api_investigadores_investigadores_detail_retrieve
+      description: |-
+        ViewSet para gestionar Investigadores y sus Adscripciones.
+        Usa funciones Postgres directamente (sin ORM).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/investigadores/investigadores/update/:
+    put:
+      operationId: api_investigadores_investigadores_update_update
+      description: Actualiza los datos de un investigador existente.
+      summary: Actualizar un investigador
+      parameters:
+      - in: query
+        name: id_investigador
+        schema:
+          type: integer
+        description: ID del investigador a actualizar
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvestigadorRequest'
+        required: true
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                message: Investigador actualizado
+          description: ''
+  /api/parametrizaciones/all/:
+    get:
+      operationId: api_parametrizaciones_all_list
+      summary: Obtener todas las parametrizaciones
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parametrizacion'
+          description: ''
+  /api/parametrizaciones/by-tema/:
+    get:
+      operationId: api_parametrizaciones_by_tema_list
+      description: Devuelve todas las parametrizaciones asociadas a un tema específico.
+      summary: Obtener parametrizaciones por tema
+      parameters:
+      - in: query
+        name: id_tema
+        schema:
+          type: integer
+        description: ID del tema a consultar
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parametrizacion'
+          description: ''
+  /api/parametrizaciones/estados/:
+    get:
+      operationId: api_parametrizaciones_estados_retrieve
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/parametrizaciones/estados/{id_usuario}/:
+    get:
+      operationId: api_parametrizaciones_estados_retrieve_2
+      parameters:
+      - in: path
+        name: id_usuario
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/parametrizaciones/instituciones/estado/{id_entidad_federativa}/:
+    get:
+      operationId: api_parametrizaciones_instituciones_estado_list
+      description: Devuelve todas las instituciones asociadas a una entidad federativa
+        específica.
+      summary: Obtener instituciones por entidad federativa
+      parameters:
+      - in: path
+        name: id_entidad_federativa
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitucionPorEstado'
+          description: ''
+  /api/registros/:
+    get:
+      operationId: api_registros_list
+      description: Lista registros paginados por tipo
+      summary: Listar registros por tipo (IMPI/INDAUTOR)
+      parameters:
+      - in: query
+        name: filter
+        schema:
+          type: string
+          default: fecha_solicitud
+        description: Campo por el cual filtrar
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Registros por página
+      - in: query
+        name: order
+        schema:
+          type: string
+          default: asc
+        description: Orden de los resultados (asc/desc)
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Número de página
+      - in: query
+        name: tipo
+        schema:
+          type: integer
+        description: ID del tipo de registro (44=IMPI, 45=INDAUTOR)
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaginatedRegistro'
+          description: ''
+    post:
+      operationId: api_registros_create
+      summary: Crear registro
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+  /api/registros/{id}/:
+    get:
+      operationId: api_registros_retrieve
+      summary: Obtener registro por ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroList'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: No encontrado
+          description: ''
+    put:
+      operationId: api_registros_update
+      summary: Actualizar registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+        required: true
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+  /api/registros/{id}/disable:
+    patch:
+      operationId: api_registros_disable_partial_update
+      summary: Deshabilitar registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+  /api/registros/{id}/enable:
+    patch:
+      operationId: api_registros_enable_partial_update
+      summary: Habilitar registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Registro'
+          description: ''
+  /api/registros/expediente/{no_expediente}/:
+    get:
+      operationId: api_registros_expediente_retrieve
+      summary: Obtener registro por número de expediente
+      parameters:
+      - in: path
+        name: no_expediente
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroList'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                description: No encontrado
+          description: ''
+  /api/registros/indautor-bulk/:
+    post:
+      operationId: api_registros_indautor_bulk_create
+      summary: Carga masiva INDAUTOR desde Excel (multi-hojas)
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/registros/search/:
+    get:
+      operationId: api_registros_search_retrieve
+      summary: Buscar registros por texto
+      parameters:
+      - in: query
+        name: filter
+        schema:
+          type: string
+          default: 'id_registro '
+        description: Campo por el cual filtrar
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+        description: Registros por página
+      - in: query
+        name: order
+        schema:
+          type: string
+          default: asc
+        description: Orden de los resultados (asc/desc)
+      - in: query
+        name: page
+        schema:
+          type: integer
+          default: 1
+        description: Número de página
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Texto a buscar
+        required: true
+      - in: query
+        name: tipo
+        schema:
+          type: integer
+        description: ID del tipo de registro
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRegistro'
+          description: ''
+  /api/tableros/entidades/all/:
+    get:
+      operationId: api_tableros_entidades_all_list
+      summary: Todas las entidades federativas con número de registros
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntidadTop'
+          description: ''
+  /api/tableros/entidades/top10/:
+    get:
+      operationId: api_tableros_entidades_top10_list
+      summary: Top 10 entidades federativas por número de registros
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntidadTop'
+          description: ''
+  /api/tableros/instituciones/all/:
+    get:
+      operationId: api_tableros_instituciones_all_list
+      summary: Todas las instituciones con número de registros
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitucionAll'
+          description: ''
+  /api/tableros/instituciones/filtradas/:
+    get:
+      operationId: api_tableros_instituciones_filtradas_list
+      summary: Instituciones filtradas por tipo (Federal/Descentralizado)
+      parameters:
+      - in: query
+        name: tipo_institucion
+        schema:
+          type: integer
+        description: 'ID del tipo de institución (ej: 122=Descentralizado, 123=Federal)'
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitucionTop'
+          description: ''
+  /api/tableros/instituciones/top10/:
+    get:
+      operationId: api_tableros_instituciones_top10_list
+      summary: Top 10 instituciones por número de registros
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitucionTop'
+          description: ''
+  /api/tableros/investigadores/categorias/:
+    get:
+      operationId: api_tableros_investigadores_categorias_retrieve
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/tableros/investigadores/sexo/:
+    get:
+      operationId: api_tableros_investigadores_sexo_list
+      summary: Conteo de registros por sexo de investigador
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistrosPorSexo'
+          description: ''
+  /api/tableros/registros/estatus/:
+    get:
+      operationId: api_tableros_registros_estatus_list
+      summary: Mostrar registros agrupados por estatus (Confirmada, Pendiente, Rechazada)
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntidadTop'
+          description: ''
+  /api/tableros/registros/mes/:
+    get:
+      operationId: api_tableros_registros_mes_list
+      summary: Conteo de registros por mes para un año específico
+      parameters:
+      - in: query
+        name: anio
+        schema:
+          type: integer
+        description: 'Año para filtrar los registros (ej: 2024)'
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistrosPorMes'
+          description: ''
+  /api/tableros/registros/periodo/:
+    get:
+      operationId: api_tableros_registros_periodo_list
+      description: |-
+        Endpoint para obtener registros agrupados por año, mes y tipo de registro
+        dentro de un rango de fechas.
+      summary: Conteo de registros agrupados por año, mes y tipo de registro
+      parameters:
+      - in: query
+        name: fin
+        schema:
+          type: string
+        description: Fecha de fin del rango (YYYY-MM-DD)
+        required: true
+      - in: query
+        name: inicio
+        schema:
+          type: string
+        description: Fecha de inicio del rango (YYYY-MM-DD)
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistrosPorPeriodo'
+          description: ''
+  /api/tableros/sectores/:
+    get:
+      operationId: api_tableros_sectores_list
+      summary: Registros agrupados por sector económico
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SectorEconomico'
+          description: ''
+  /api/tableros/sectores/actividad/:
+    get:
+      operationId: api_tableros_sectores_actividad_list
+      summary: Top 10 registros agrupados por sector/actividad económica
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SectorActividad'
+          description: ''
+  /api/tableros/sectores/actividad/all/:
+    get:
+      operationId: api_tableros_sectores_actividad_all_list
+      summary: Todos los registros agrupados por sector/actividad económica
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SectorActividad'
+          description: ''
+  /api/tableros/solicitudes/impi/:
+    get:
+      operationId: api_tableros_solicitudes_impi_list
+      summary: Requests grouped by type (IMPI)
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequestType'
+          description: ''
+  /api/tableros/solicitudes/indautor/:
+    get:
+      operationId: api_tableros_solicitudes_indautor_list
+      summary: Requests grouped by type (INDAUTOR)
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequestType'
+          description: ''
+  /api/usuarios/:
+    get:
+      operationId: api_usuarios_retrieve
+      description: Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: api_usuarios_create
+      description: Vista para Listar todos los usuarios (GET) o Crear uno nuevo (POST).
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/usuarios/{correo}/:
+    get:
+      operationId: api_usuarios_retrieve_2
+      description: |-
+        Vista para Obtener (GET), Actualizar (PUT) o Deshabilitar (DELETE)
+        un usuario específico por su correo.
+      parameters:
+      - in: path
+        name: correo
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_usuarios_update
+      description: |-
+        Vista para Obtener (GET), Actualizar (PUT) o Deshabilitar (DELETE)
+        un usuario específico por su correo.
+      parameters:
+      - in: path
+        name: correo
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_usuarios_destroy
+      description: |-
+        Vista para Obtener (GET), Actualizar (PUT) o Deshabilitar (DELETE)
+        un usuario específico por su correo.
+      parameters:
+      - in: path
+        name: correo
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/usuarios/auth/login/:
+    post:
+      operationId: api_usuarios_auth_login_create
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/usuarios/auth/refresh/:
+    post:
+      operationId: api_usuarios_auth_refresh_create
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/usuarios/delete/{id_user}/:
+    delete:
+      operationId: api_usuarios_delete_destroy
+      description: |-
+        Vista para eliminar a un usuario específico por su ID (DELETE).
+        (Se conserva el 'delate' original)
+      parameters:
+      - in: path
+        name: id_user
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/usuarios/tipo/{tipo}/:
+    get:
+      operationId: api_usuarios_tipo_retrieve
+      description: Vista para Obtener una LISTA de usuarios por su tipo (GET).
+      parameters:
+      - in: path
+        name: tipo
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Adscripcion:
+      type: object
+      properties:
+        id_adscripcion:
+          type: integer
+          readOnly: true
+        id_investigador:
+          type: integer
+        id_institucion:
+          type: integer
+        departamento_param:
+          type: integer
+        programa_educativo_param:
+          type: integer
+        cuerpo_academico_param:
+          type: integer
+        fec_ini:
+          type: string
+          format: date-time
+        fec_fin:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - cuerpo_academico_param
+      - departamento_param
+      - fec_ini
+      - id_adscripcion
+      - id_institucion
+      - id_investigador
+      - programa_educativo_param
+    AdscripcionRequest:
+      type: object
+      properties:
+        id_investigador:
+          type: integer
+        id_institucion:
+          type: integer
+        departamento_param:
+          type: integer
+        programa_educativo_param:
+          type: integer
+        cuerpo_academico_param:
+          type: integer
+        fec_ini:
+          type: string
+          format: date-time
+        fec_fin:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - cuerpo_academico_param
+      - departamento_param
+      - fec_ini
+      - id_institucion
+      - id_investigador
+      - programa_educativo_param
+    EntidadTop:
+      type: object
+      properties:
+        ent_federativa_param:
+          type: integer
+        entidad_nombre:
+          type: string
+        total:
+          type: integer
+      required:
+      - ent_federativa_param
+      - entidad_nombre
+      - total
+    InstitucionAll:
+      type: object
+      properties:
+        id_institucion:
+          type: integer
+        institucion_nombre:
+          type: string
+        tipo_institucion:
+          type: string
+        total:
+          type: integer
+      required:
+      - id_institucion
+      - institucion_nombre
+      - tipo_institucion
+      - total
+    InstitucionPorEstado:
+      type: object
+      properties:
+        id_institucion:
+          type: integer
+        nombre_institucion:
+          type: string
+        nombre_entidad_federativa:
+          type: string
+      required:
+      - id_institucion
+      - nombre_entidad_federativa
+      - nombre_institucion
+    InstitucionTop:
+      type: object
+      properties:
+        id_institucion:
+          type: integer
+        institucion_nombre:
+          type: string
+        total:
+          type: integer
+      required:
+      - id_institucion
+      - institucion_nombre
+      - total
+    Investigador:
+      type: object
+      properties:
+        id_investigador:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+        ape_pat:
+          type: string
+        ape_mat:
+          type: string
+          nullable: true
+        curp:
+          type: string
+        sexo_param:
+          type: integer
+        tipo_investigador_param:
+          type: integer
+      required:
+      - ape_pat
+      - curp
+      - id_investigador
+      - nombre
+      - sexo_param
+      - tipo_investigador_param
+    InvestigadorRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+        ape_pat:
+          type: string
+          minLength: 1
+        ape_mat:
+          type: string
+          nullable: true
+          minLength: 1
+        curp:
+          type: string
+          minLength: 1
+        sexo_param:
+          type: integer
+        tipo_investigador_param:
+          type: integer
+      required:
+      - ape_pat
+      - curp
+      - nombre
+      - sexo_param
+      - tipo_investigador_param
+    PaginatedRegistro:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Registros'
+      required:
+      - limit
+      - page
+      - results
+      - total
+    Parametrizacion:
+      type: object
+      properties:
+        id_param:
+          type: integer
+        nombre:
+          type: string
+        id_tema:
+          type: integer
+        id_param_padre:
+          type: integer
+          nullable: true
+      required:
+      - id_param
+      - id_param_padre
+      - id_tema
+      - nombre
+    Registro:
+      type: object
+      properties:
+        no_expediente:
+          type: string
+        titulo:
+          type: string
+          nullable: true
+        descripcion:
+          type: string
+          nullable: true
+        fec_solicitud:
+          type: string
+          format: date
+          nullable: true
+        no_titulo:
+          type: string
+          nullable: true
+        estatus_param:
+          type: integer
+          nullable: true
+        rama_param:
+          type: integer
+          nullable: true
+        medio_ingreso_param:
+          type: integer
+          nullable: true
+        tecnologico_origen:
+          type: string
+          nullable: true
+        anio_renovacion:
+          type: integer
+          nullable: true
+        id_subsector:
+          type: integer
+          nullable: true
+        fec_expedicion:
+          type: string
+          format: date
+          nullable: true
+        archivo:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+        tipo_registro_param:
+          type: integer
+        tipo_ingreso_param:
+          type: integer
+        id_usuario:
+          type: integer
+      required:
+      - id_usuario
+      - no_expediente
+      - tipo_ingreso_param
+      - tipo_registro_param
+    RegistroList:
+      type: object
+      properties:
+        id_registro:
+          type: integer
+        no_expediente:
+          type: string
+        titulo:
+          type: string
+        tipo_ingreso_param:
+          type: string
+        rama_param:
+          type: string
+        estatus_param:
+          type: string
+        tipo_registro_param:
+          type: string
+        fec_solicitud:
+          type: string
+      required:
+      - estatus_param
+      - fec_solicitud
+      - id_registro
+      - no_expediente
+      - rama_param
+      - tipo_ingreso_param
+      - tipo_registro_param
+      - titulo
+    RegistroRequest:
+      type: object
+      properties:
+        no_expediente:
+          type: string
+          minLength: 1
+        titulo:
+          type: string
+          nullable: true
+        descripcion:
+          type: string
+          nullable: true
+        fec_solicitud:
+          type: string
+          format: date
+          nullable: true
+        no_titulo:
+          type: string
+          nullable: true
+        estatus_param:
+          type: integer
+          nullable: true
+        rama_param:
+          type: integer
+          nullable: true
+        medio_ingreso_param:
+          type: integer
+          nullable: true
+        tecnologico_origen:
+          type: string
+          nullable: true
+        anio_renovacion:
+          type: integer
+          nullable: true
+        id_subsector:
+          type: integer
+          nullable: true
+        fec_expedicion:
+          type: string
+          format: date
+          nullable: true
+        archivo:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+        tipo_registro_param:
+          type: integer
+        tipo_ingreso_param:
+          type: integer
+        id_usuario:
+          type: integer
+      required:
+      - id_usuario
+      - no_expediente
+      - tipo_ingreso_param
+      - tipo_registro_param
+    Registros:
+      type: object
+      properties:
+        id_registro:
+          type: integer
+          readOnly: true
+        no_expediente:
+          type: string
+        titulo:
+          type: string
+        tipo_ingreso_param:
+          type: string
+        id_usuarios:
+          type: array
+          items:
+            type: integer
+        rama_param:
+          type: string
+        fec_expedicion:
+          type: string
+        observaciones:
+          type: string
+        archivo:
+          type: string
+        estatus_param:
+          type: string
+        medio_ingreso_param:
+          type: string
+        tipo_registro_param:
+          type: string
+        fec_solicitud:
+          type: string
+        descripcion:
+          type: string
+        id_nstituciones:
+          type: array
+          items:
+            type: integer
+        instituciones:
+          type: array
+          items:
+            type: string
+      required:
+      - archivo
+      - descripcion
+      - estatus_param
+      - fec_expedicion
+      - fec_solicitud
+      - id_nstituciones
+      - id_registro
+      - id_usuarios
+      - instituciones
+      - medio_ingreso_param
+      - no_expediente
+      - observaciones
+      - rama_param
+      - tipo_ingreso_param
+      - tipo_registro_param
+      - titulo
+    RegistrosPorMes:
+      type: object
+      properties:
+        mes:
+          type: integer
+        total:
+          type: integer
+      required:
+      - mes
+      - total
+    RegistrosPorPeriodo:
+      type: object
+      properties:
+        anio:
+          type: integer
+        mes:
+          type: integer
+        tipo_registro_param:
+          type: integer
+        total:
+          type: integer
+      required:
+      - anio
+      - mes
+      - tipo_registro_param
+      - total
+    RegistrosPorSexo:
+      type: object
+      properties:
+        sexo:
+          type: string
+        total:
+          type: integer
+      required:
+      - sexo
+      - total
+    RequestType:
+      type: object
+      properties:
+        tipo_registro:
+          type: string
+        rama:
+          type: string
+        total:
+          type: integer
+      required:
+      - rama
+      - tipo_registro
+      - total
+    SectorActividad:
+      type: object
+      properties:
+        sector_nombre:
+          type: string
+        actividad_nombre:
+          type: string
+        total:
+          type: integer
+      required:
+      - actividad_nombre
+      - sector_nombre
+      - total
+    SectorEconomico:
+      type: object
+      properties:
+        sector:
+          type: string
+        total:
+          type: integer
+      required:
+      - sector
+      - total
