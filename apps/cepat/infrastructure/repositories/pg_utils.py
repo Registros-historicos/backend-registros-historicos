@@ -59,3 +59,8 @@ class PgCepatRepository(CepatRepositoryPort):
         """
         call_fn_rows("public.f_elimina_cepat_por_id", [cepat_id])
         return None
+
+    def get_cepat_by_id_user(self, id_user: int) -> Optional[Cepat]:
+        """ Llama a f_busca_cepat_por_id """
+        rows = call_fn_rows("public.f_buscar_cepat_por_usuario", [id_user])
+        return self._map_row_to_entity(rows[0]) if rows else None

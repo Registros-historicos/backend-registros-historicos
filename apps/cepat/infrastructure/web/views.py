@@ -4,7 +4,7 @@ from rest_framework import status
 from django.core.exceptions import PermissionDenied
 
 # Selectors (Queries) - SÓLO PARA GET
-from ...application.selectors.cepat_queries import get_all_cepat, get_cepat_by_id
+from ...application.selectors.cepat_queries import get_all_cepat, get_cepat_by_id, get_cepat_by_id_user
 
 # Services (Commands) - PARA POST, PUT, DELETE
 from ...application.services.cepat_commands import CepatCommandsService
@@ -145,3 +145,17 @@ def detail_update_delete_view(request, cepat_id: int):
             return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             return Response({"error": f"Error al eliminar: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def detail_get_cepat_view(request, id_user: int):
+    """
+    Vista para Obtener un CEPAT by id_user (GET)
+    """
+    if request.method == 'GET':
+        cepat = get_cepat_by_id_user(id_user, request.user)
+        if not cepat:
+            return Response({"error": "Cepat no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CepatSerializer(cepat)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
