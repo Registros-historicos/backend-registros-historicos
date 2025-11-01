@@ -20,5 +20,11 @@ urlpatterns = [
         views.detail_update_delete_view,
         name='cepat-detail-update-delete'
     ),
+
+    path(
+        'user/<int:id_user>/',
+        views.detail_get_cepat_view,
+        name='detail_get_cepat-by-user'
+    ),
 ]
 
