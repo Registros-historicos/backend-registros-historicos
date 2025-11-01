@@ -9,7 +9,7 @@ class Cepat:
     """
     id_cepat: int
     nombre: str
-    id_usuario: int
+    id_usuario: Optional[int]
 
 @dataclass
 class CepatPatchResult:
