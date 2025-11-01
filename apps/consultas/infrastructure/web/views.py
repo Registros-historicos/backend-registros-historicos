@@ -99,7 +99,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def registros_por_sexo_view(self, request):
-        resultado = registros_por_sexo_selector()
+        resultado = registros_por_sexo_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
     
     @extend_schema(
