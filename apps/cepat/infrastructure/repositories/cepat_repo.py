@@ -6,11 +6,11 @@ class CepatSerializer(serializers.Serializer):
     """
     id_cepat = serializers.IntegerField(read_only=True)
     nombre = serializers.CharField(read_only=True)
-    id_usuario = serializers.IntegerField(read_only=True)
+    id_usuario = serializers.IntegerField(read_only=True, allow_null=True)
 
 class CepatInputSerializer(serializers.Serializer):
     """
     Serializador para VALIDAR la entrada al crear o actualizar un Cepat. (Entrada)
     """
     nombre = serializers.CharField(max_length=255, required=True)
-    id_usuario = serializers.IntegerField(required=True)
+    id_usuario = serializers.IntegerField(required=True, allow_null=True)

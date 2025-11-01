@@ -15,7 +15,7 @@ class CepatInputSerializer(serializers.Serializer):
     Se usa para validar el 'request.data' de la vista.
     """
     nombre = serializers.CharField(max_length=255, required=True)
-    id_usuario = serializers.IntegerField(required=True)
+    id_usuario = serializers.IntegerField(required=True, allow_null=True)
 
 class CepatPatchUsuarioSerializer(serializers.Serializer):
     """
