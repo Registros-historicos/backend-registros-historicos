@@ -25,5 +25,8 @@ urlpatterns = [
 
    path('indautor-bulk/', RegistroViewSet.as_view({'post': 'indautor_bulk'}), name='carga_masiva_indautor'),
     path('impi-bulk/', RegistroViewSet.as_view({'post': 'impi_bulk'}), name='carga_masiva_impi'),
+
+    path('download/plantilla/indautor/', RegistroViewSet.as_view({'get': 'descargar_indautor'}), name='descargar_indautor'),
+    path('download/plantilla/impi/', RegistroViewSet.as_view({'get': 'descargar_impi'}), name='descargar_impi'),
 ]
 

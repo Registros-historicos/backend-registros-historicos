@@ -24,6 +24,12 @@ from apps.registros.application.services.bulk_indautor_service import BulkIndaut
 from apps.registros.application.services.bulk_impi_service import BulkImpiService
 from apps.registros.infrastructure.repositories.investigadores_repositorio import PostgresInvestigadorRepository
 
+from apps.registros.application.services.excel_impi_service import ExcelImpiService
+from apps.registros.application.services.excel_indautor_service import ExcelIndautorService
+import os
+from django.conf import settings
+from django.http import FileResponse, Http404
+
 bulk_service = BulkIndautorService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
 
 
@@ -210,3 +216,45 @@ class RegistroViewSet(viewsets.ViewSet):
 
         status_code = status.HTTP_207_MULTI_STATUS if result.get("errores") else status.HTTP_201_CREATED
         return Response(result, status=status_code)
+
+    @extend_schema(
+        summary="Descargar plantilla IMPI (Excel actualizado y protegido)",
+        responses={200: {"description": "Devuelve el archivo impi.xlsx actualizado"}}
+    )
+    @action(detail=False, methods=["get"], url_path="descargar-impi")
+    def descargar_impi(self, request):
+        try:
+            service = ExcelImpiService()
+            resultado = service.execute()  
+            file_path = resultado["archivo"]
+        except Exception as e:
+            return Response(
+                {"error": f"Error al generar plantilla IMPI: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if not os.path.exists(file_path):
+            raise Http404("Archivo IMPI no encontrado")
+
+        return FileResponse(open(file_path, "rb"), as_attachment=True, filename="impi.xlsx")
+
+    @extend_schema(
+        summary="Descargar plantilla INDAUTOR (Excel actualizado y protegido)",
+        responses={200: {"description": "Devuelve el archivo indautor.xlsx actualizado"}}
+    )
+    @action(detail=False, methods=["get"], url_path="descargar-indautor")
+    def descargar_indautor(self, request):
+        try:
+            service = ExcelIndautorService()
+            resultado = service.execute()  # genera o actualiza el archivo
+            file_path = resultado["archivo"]
+        except Exception as e:
+            return Response(
+                {"error": f"Error al generar plantilla INDAUTOR: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        if not os.path.exists(file_path):
+            raise Http404("Archivo INDAUTOR no encontrado")
+
+        return FileResponse(open(file_path, "rb"), as_attachment=True, filename="indautor.xlsx")
