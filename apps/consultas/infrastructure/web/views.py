@@ -149,12 +149,13 @@ class ConsultaViewSet(viewsets.ViewSet):
         return Response(resultado, status=status.HTTP_200_OK)
     
     @extend_schema(
-        summary="Todos los registros agrupados por sector/actividad económica",
-        responses={200: SectorActividadSerializer(many=True)},
+    summary="Todos los registros agrupados por sector/actividad económica",
+    responses={200: SectorActividadSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def sectores_actividad_all_view(self, request):
-        resultado = sectores_actividad_all()
+        from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
+        resultado = sectores_actividad_all(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
