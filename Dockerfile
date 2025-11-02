@@ -15,7 +15,7 @@ COPY requirements/base.txt ./requirements/base.txt
 RUN pip install --upgrade pip \
  && pip wheel --wheel-dir=/wheels -r requirements/base.txt
 
-# RUN pip wheel --wheel-dir=/wheels gunicorn>=21.2
+RUN pip wheel --wheel-dir=/wheels gunicorn>=21.2
 
 FROM python:3.10.2-slim
 
