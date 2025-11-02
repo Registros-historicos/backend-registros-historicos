@@ -10,11 +10,7 @@ from django.db import connection
 class ExcelImpiService:
     def __init__(self):
         self.assets_path = os.path.join(
-<<<<<<< HEAD
-            os.path.dirname(__file__), "..", "..", "..", "assets"
-=======
             os.path.dirname(__file__), "..", "..", "..", "..", "assets"
->>>>>>> 85ab09f8013de779356a23d3638040bbbba0c3f4
         )
         self.template_file = os.path.join(self.assets_path, "impi.xlsx")
         self.output_file = self.template_file
