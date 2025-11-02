@@ -179,7 +179,7 @@ class RegistroViewSet(viewsets.ViewSet):
         if not file:
             return Response({"error": "Debe adjuntar un archivo Excel (.xlsx)."}, status=status.HTTP_400_BAD_REQUEST)
 
-        id_usuario = int(request.data.get("id_usuario", 1))
+        id_usuario = request.user.id
         hojas = request.data.get("hojas")  # puede ser "2022,2023" o "2020-2024"
         
         print("Iniciando carga masiva INDAUTOR por usuario:", id_usuario)
@@ -201,7 +201,8 @@ class RegistroViewSet(viewsets.ViewSet):
         if not file:
             return Response({"error": "Debe adjuntar un archivo Excel (.xlsx)."}, status=status.HTTP_400_BAD_REQUEST)
 
-        id_usuario = int(request.data.get("id_usuario", 1))
+        id_usuario = request.user.id
+        print("Usuario que realiza la carga masiva IMPI:", id_usuario)
         print ("Archivo recibido para carga masiva IMPI:", file.name)
         hojas = request.data.get("hojas")  # puede ser "2022,2023" o "2020-2024"
         
