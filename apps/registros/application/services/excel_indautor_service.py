@@ -10,7 +10,7 @@ from django.db import connection
 class ExcelIndautorService:
     def __init__(self):
         self.assets_path = os.path.join(
-            os.path.dirname(__file__), "..", "..", "..", "assets"
+            os.path.dirname(__file__), "..", "..", "..", "..", "assets"
         )
         self.template_file = os.path.join(self.assets_path, "indautor.xlsx")
         self.output_file = self.template_file
