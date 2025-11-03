@@ -7,18 +7,23 @@ from apps.users.application.selectors.resolve_user_context import resolve_user_c
 def list_users(correo: str, user) -> Optional[Usuario]:
     """
     Selector para buscar un usuario por email.
-    Filtrado por rol:
-     - Admin (35) y Cepat (37): Pueden buscar.
-     - Otro: No puede buscar.
+    Permisos mejorados: Usuario puede ver sus propios datos
     """
-
+    user_email = getattr(user, "correo", None)
+    
+    # PERMITIR que usuario vea sus propios datos
+    if user_email and user_email == correo:
+        repo = PgUserRepository()
+        return repo.get_by_correo_no_login(correo)
+    
+    # Mantener lógica original para admins
     id_usuario_autenticado = getattr(user, "id", None)
     context = None
     if id_usuario_autenticado:
         context = resolve_user_context(int(id_usuario_autenticado))
 
-    if not context or context.get("rol_id") not in [35, 37]:
-        return None
-
-    repo = PgUserRepository()
-    return repo.get_by_correo_no_login(correo)
+    if context and context.get("rol_id") in [35, 37]:
+        repo = PgUserRepository()
+        return repo.get_by_correo_no_login(correo)
+    
+    return None
