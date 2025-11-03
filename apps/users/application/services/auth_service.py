@@ -27,6 +27,14 @@ class AuthService:
         pwd_stored = u.get("pwd") or u.get("pwd_hash") or u.get("password")
         if not pwd_stored or not check_password(raw_pwd, pwd_stored): return None
 
+        # OBTENER CONTEXTO DEL USUARIO
+        try:
+            from apps.users.application.selectors.resolve_user_context import resolve_user_context
+            contexto = resolve_user_context(u.get("id_usuario"))
+        except Exception as e:
+            print(f"⚠️ Error obteniendo contexto: {e}")
+            contexto = None
+
         claims = {
             "sub": str(u.get("id_usuario")),    
             "correo": u.get("correo"),
@@ -44,10 +52,13 @@ class AuthService:
             "estatus": u.get("estatus"),
             "nombre": u.get("nombre"),
         }
+        
         return {
             "access": access,
             "access_exp": datetime.fromtimestamp(exp_access, tz=timezone.utc),
             "refresh": refresh,
             "refresh_exp": datetime.fromtimestamp(exp_refresh, tz=timezone.utc),
-            "user": safe_user
+            "user": safe_user,
+            # INCLUIR CONTEXTO EN LA RESPUESTA
+            "contexto": contexto
         }

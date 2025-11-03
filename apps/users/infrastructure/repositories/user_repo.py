@@ -146,3 +146,22 @@ class PgUserRepository(UserRepositoryPort):
         sql = f"SELECT public.f_elimina_usuario_by_id({id_user})"
         with connection.cursor() as cur:
             cur.execute(sql)
+    #AGREGADO
+    def get_by_id(self, user_id: int) -> Optional[Usuario]:
+        """
+        Busca un usuario por su ID
+        """
+        rows = call_fn_rows(
+        "public.f_busca_usuario_por_id",
+        [user_id]
+        )
+    
+        if not rows:
+            return None
+    
+        r = rows[0]
+    
+        if 'estatus_param' in r:
+            r['estatus'] = r.pop('estatus_param')
+    
+        return Usuario(**r)
