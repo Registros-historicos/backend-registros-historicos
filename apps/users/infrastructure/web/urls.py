@@ -6,7 +6,8 @@ from .views import (
     list_create_users_view,
     user_detail_update_delete_view,
     user_by_type_view,
-    MeView, user_delate_by_id_view
+    MeView, user_delate_by_id_view,
+    user_profile_completo_view #agregado
 )
 from .auth_views import LoginView, RefreshView
 
@@ -44,4 +45,11 @@ urlpatterns = [
         user_detail_update_delete_view,
         name='user-detail-update-delete'
     ),
+    #AGREGADO
+    # Nueva ruta para perfil completo
+    path(
+    'me/profile/',
+    user_profile_completo_view,
+    name='user-profile-completo'
+),
 ]

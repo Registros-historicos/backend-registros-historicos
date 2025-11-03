@@ -189,3 +189,29 @@ def user_delate_by_id_view(request, id_user: int):
             return Response({"error": f"Error inesperado: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "Usuario eliminado correctamente"}, status=status.HTTP_200_OK)
+#AGREGADO
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile_completo_view(request):
+    """
+    Endpoint para obtener el perfil COMPLETO del usuario autenticado
+    """
+    try:
+        # Obtener ID del usuario autenticado
+        user_id = getattr(request.user, "id", getattr(request.user, "sub", None))
+        if not user_id:
+            return Response({"error": "Usuario no identificado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Usar el selector existente adaptado
+        from apps.users.application.selectors.get_user_by_id import get_user_profile_completo
+        perfil = get_user_profile_completo(int(user_id), request.user)
+        
+        if not perfil:
+            return Response({"error": "Perfil no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(perfil, status=status.HTTP_200_OK)
+        
+    except PermissionDenied as e:
+        return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+    except Exception as e:
+        return Response({"error": f"Error obteniendo perfil: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
