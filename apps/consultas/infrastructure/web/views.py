@@ -190,7 +190,7 @@ class ConsultaViewSet(viewsets.ViewSet):
 
         resultado = registros_por_mes_selector(anio, request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     
     @extend_schema(
         summary="Conteo de registros agrupados por año, mes y tipo de registro",
