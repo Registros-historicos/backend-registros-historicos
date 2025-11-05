@@ -62,7 +62,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"])
     def records_by_status_view(self, request):
-        resultado = conteo_registros_por_estatus_selector()
+        resultado = conteo_registros_por_estatus_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
         summary="registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
         responses={200: EntidadTopSerializer(many=True)},
