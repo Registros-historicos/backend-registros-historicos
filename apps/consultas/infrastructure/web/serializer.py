@@ -51,3 +51,8 @@ class InstitucionAllSerializer(serializers.Serializer):
     institucion_nombre = serializers.CharField()
     tipo_institucion = serializers.CharField()
     total = serializers.IntegerField()
+
+class ProgramaEducativoSerializer(serializers.Serializer):
+    programa_educativo_param = serializers.IntegerField()
+    nombre_programa_educativo = serializers.CharField(max_length=255)
+    total = serializers.IntegerField()
