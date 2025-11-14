@@ -18,3 +18,10 @@ class UpdateIdCepatSerializer(serializers.Serializer):
     """
     # required=False y allow_null=True permiten enviar {"id_cepat": null}
     id_cepat = serializers.IntegerField(required=False, allow_null=True)
+
+class UpdateIdCoordinadortSerializer(serializers.Serializer):
+    """
+    Valida los datos de entrada para actualizar el id_cepat.
+    """
+    # required=False y allow_null=True permiten enviar {"id_cepat": null}
+    id_coordinador = serializers.IntegerField(required=False, allow_null=True)

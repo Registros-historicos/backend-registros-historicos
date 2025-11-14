@@ -46,3 +46,19 @@ class PgInstitucionRepository(InstitucionRepositoryPort):
         for r in rows:
             instituciones.append(self._mapear_fila_a_entidad(r))
         return instituciones
+
+    def actualizar_id_coordinador(self, id_institucion: int, id_coordinador: Optional[int]) -> Optional[Institucion]:
+        """
+        Llama a la función de BD para actualizar el id_coordinador y devuelve la entidad completa.
+        """
+        rows = call_fn_rows(
+            "public.f_actualiza_coordinador_institucion",
+            [id_institucion, id_coordinador]
+        )
+
+        if not rows:
+            return None
+
+        # La función devuelve SETOF, pero solo esperamos una fila
+        institucion_data = rows[0]
+        return self._mapear_fila_a_entidad(institucion_data)
