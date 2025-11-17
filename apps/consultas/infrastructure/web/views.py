@@ -19,6 +19,7 @@ from apps.consultas.application.selectors.records_by_period import registros_por
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.application.selectors.investigador_por_coordinador import investigadores_por_coordinador_selector
 from apps.consultas.application.selectors.usuarios_por_estados_cepat import usuarios_por_estados_cepat_selector
+from apps.consultas.application.selectors.programs_educational_queries import registros_por_programa_educativo_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -32,6 +33,8 @@ from apps.consultas.infrastructure.web.serializer import (
     RegistrosPorPeriodoSerializer, InstitucionAllSerializer,
     InvestigadorPorCoordinadorSerializer,
     UsuarioPorEstadoCepatSerializer
+    RegistrosPorPeriodoSerializer, InstitucionAllSerializer, ProgramaEducativoSerializer
+
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -302,4 +305,13 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def usuarios_por_estados_cepat_view(self, request):
         resultado = usuarios_por_estados_cepat_selector(request.user)
+        return Response(resultado, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+    summary="Conteo de registros por programa educativo",
+    responses={200: ProgramaEducativoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def programas_educativos_view(self, request):
+        resultado = registros_por_programa_educativo_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
