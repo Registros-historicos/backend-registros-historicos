@@ -17,6 +17,9 @@ from apps.consultas.application.selectors.records_by_month_queries import regist
 from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
 from apps.consultas.application.selectors.records_by_period import registros_por_periodo_selector
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
+from apps.consultas.application.selectors.investigador_por_coordinador import (
+    investigadores_por_coordinador_selector
+)
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -27,7 +30,8 @@ from apps.consultas.infrastructure.web.serializer import (
     RequestTypeSerializer,
     SectorActividadSerializer,
     RegistrosPorMesSerializer,
-    RegistrosPorPeriodoSerializer, InstitucionAllSerializer
+    RegistrosPorPeriodoSerializer, InstitucionAllSerializer,
+    InvestigadorPorCoordinadorSerializer
 
 )
 
@@ -275,4 +279,18 @@ class ConsultaViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         resultado = instituciones_filtradas_selector(tipo_institucion)
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+            summary="[Coordinador] Lista los investigadores de la institución del coordinador",
+            responses={200: InvestigadorPorCoordinadorSerializer(many=True)},
+        )
+    @action(detail=False, methods=["get"])
+    def investigadores_por_coordinador_view(self, request):
+        """
+        Endpoint que retorna los investigadores asociados a la(s) institución(es)
+        del usuario coordinador que realiza la petición.
+        """
+        # Llama al selector pasándole el usuario autenticado
+        resultado = investigadores_por_coordinador_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)

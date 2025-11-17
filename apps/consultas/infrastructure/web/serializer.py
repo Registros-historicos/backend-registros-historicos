@@ -51,3 +51,12 @@ class InstitucionAllSerializer(serializers.Serializer):
     institucion_nombre = serializers.CharField()
     tipo_institucion = serializers.CharField()
     total = serializers.IntegerField()
+
+class InvestigadorPorCoordinadorSerializer(serializers.Serializer):
+    id_investigador = serializers.IntegerField()
+    curp = serializers.CharField()
+    nombre = serializers.CharField()
+    ape_pat = serializers.CharField()
+    ape_mat = serializers.CharField(required=False, allow_null=True)
+    sexo_param = serializers.IntegerField()
+    tipo_investigador_param = serializers.IntegerField()
