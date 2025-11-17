@@ -52,6 +52,25 @@ class InstitucionAllSerializer(serializers.Serializer):
     tipo_institucion = serializers.CharField()
     total = serializers.IntegerField()
 
+class InvestigadorPorCoordinadorSerializer(serializers.Serializer):
+    id_investigador = serializers.IntegerField()
+    curp = serializers.CharField()
+    nombre = serializers.CharField()
+    ape_pat = serializers.CharField()
+    ape_mat = serializers.CharField(required=False, allow_null=True)
+    sexo_param = serializers.IntegerField()
+    tipo_investigador_param = serializers.IntegerField()
+
+class UsuarioPorEstadoCepatSerializer(serializers.Serializer):
+    id_usuario = serializers.IntegerField()
+    nombre = serializers.CharField()
+    ape_pat = serializers.CharField()
+    ape_mat = serializers.CharField(required=False, allow_null=True)
+    url_foto = serializers.CharField(required=False, allow_null=True)
+    correo = serializers.EmailField()
+    telefono = serializers.CharField()
+    tipo_usuario_param = serializers.IntegerField()
+    estatus_param = serializers.IntegerField()
 class ProgramaEducativoSerializer(serializers.Serializer):
     programa_educativo_param = serializers.IntegerField()
     nombre_programa_educativo = serializers.CharField(max_length=255)
