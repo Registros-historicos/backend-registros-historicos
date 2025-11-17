@@ -22,7 +22,6 @@ from apps.consultas.application.selectors.usuarios_por_estados_cepat import usua
 from apps.consultas.application.selectors.programs_educational_queries import registros_por_programa_educativo_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
-    StatusCountSerializer,
     CategoriaInvestigadorSerializer,
     InstitucionTopSerializer,
     SectorEconomicoSerializer,
@@ -30,13 +29,12 @@ from apps.consultas.infrastructure.web.serializer import (
     RequestTypeSerializer,
     SectorActividadSerializer,
     RegistrosPorMesSerializer,
-    RegistrosPorPeriodoSerializer, InstitucionAllSerializer,
+    RegistrosPorPeriodoSerializer,
+    InstitucionAllSerializer,
     InvestigadorPorCoordinadorSerializer,
-    UsuarioPorEstadoCepatSerializer
-    RegistrosPorPeriodoSerializer, InstitucionAllSerializer, ProgramaEducativoSerializer
-
+    UsuarioPorEstadoCepatSerializer,
+    ProgramaEducativoSerializer,
 )
-
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
 
