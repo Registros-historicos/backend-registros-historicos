@@ -17,9 +17,8 @@ from apps.consultas.application.selectors.records_by_month_queries import regist
 from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
 from apps.consultas.application.selectors.records_by_period import registros_por_periodo_selector
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
-from apps.consultas.application.selectors.investigador_por_coordinador import (
-    investigadores_por_coordinador_selector
-)
+from apps.consultas.application.selectors.investigador_por_coordinador import investigadores_por_coordinador_selector
+from apps.consultas.application.selectors.usuarios_por_estados_cepat import usuarios_por_estados_cepat_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     StatusCountSerializer,
@@ -31,8 +30,8 @@ from apps.consultas.infrastructure.web.serializer import (
     SectorActividadSerializer,
     RegistrosPorMesSerializer,
     RegistrosPorPeriodoSerializer, InstitucionAllSerializer,
-    InvestigadorPorCoordinadorSerializer
-
+    InvestigadorPorCoordinadorSerializer,
+    UsuarioPorEstadoCepatSerializer
 )
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -293,4 +292,14 @@ class ConsultaViewSet(viewsets.ViewSet):
         """
         # Llama al selector pasándole el usuario autenticado
         resultado = investigadores_por_coordinador_selector(request.user)
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="[CEPAT] Obtener usuarios coordinadores en los estados del CEPAT",
+        description="Devuelve la info completa de usuarios cuyas instituciones están en los mismos estados que gestiona el CEPAT logueado.",
+        responses={200: UsuarioPorEstadoCepatSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def usuarios_por_estados_cepat_view(self, request):
+        resultado = usuarios_por_estados_cepat_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
