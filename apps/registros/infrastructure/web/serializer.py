@@ -18,6 +18,7 @@ class RegistroSerializer(serializers.Serializer):
     tipo_registro_param = serializers.IntegerField()
     tipo_ingreso_param = serializers.IntegerField()
     id_usuario = serializers.IntegerField()
+    tipo_sector_param = serializers.IntegerField(required=False, allow_null=True)
 
 class RegistroListSerializer(serializers.Serializer):
     id_registro = serializers.IntegerField()
