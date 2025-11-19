@@ -22,6 +22,7 @@ from ...application.selectors.list_records import list_records
 from ...application.selectors.search_records import search_records
 from ...application.selectors.get_record_by_id import get_record_by_id
 from ...application.selectors.get_record_by_expediente import get_record_by_expediente
+from ...application.selectors.get_investigadores_by_registro import get_investigadores_by_registro
 
 from apps.registros.application.services.bulk_indautor_service import BulkIndautorService
 from apps.registros.application.services.bulk_impi_service import BulkImpiService
@@ -154,7 +155,7 @@ class RegistroViewSet(viewsets.ViewSet):
     
     @extend_schema(
         summary="Obtener registro por ID",
-        responses={200: RegistroListSerializer, 404: {"description": "No encontrado"}},
+        responses={200: RegistroSerializer, 404: {"description": "No encontrado"}},
     )
     def retrieve(self, request, pk=None):
         registro = get_record_by_id(int(pk))
@@ -163,6 +164,14 @@ class RegistroViewSet(viewsets.ViewSet):
                 {"error": "Registro no encontrado."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        # 🔹 Nuevo: obtener investigadores asociados
+        investigadores = get_investigadores_by_registro(int(pk))
+        print(">>> investigadores:", investigadores)
+        registro["investigadores"] = investigadores
+
+        print(">>> retrieve() registro con investigadores:", registro)
+
         return Response(registro, status=status.HTTP_200_OK)
     
     @extend_schema(
