@@ -71,6 +71,9 @@ class UsuarioPorEstadoCepatSerializer(serializers.Serializer):
     telefono = serializers.CharField()
     tipo_usuario_param = serializers.IntegerField()
     estatus_param = serializers.IntegerField()
+    id_institucion = serializers.IntegerField()
+    nombre_institucion = serializers.CharField()
+
 class ProgramaEducativoSerializer(serializers.Serializer):
     programa_educativo_param = serializers.IntegerField()
     nombre_programa_educativo = serializers.CharField(max_length=255)
