@@ -9,6 +9,9 @@ from .serializer import (
     PaginatedRegistroSerializer,
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 from apps.registros.infrastructure.repositories.registros_repo import PostgresRegistroRepository
 from apps.registros.application.services.registros_commands import RegistroService
 from ...application.selectors.create_record import create_new_record
@@ -120,7 +123,7 @@ class RegistroViewSet(viewsets.ViewSet):
             OpenApiParameter(name="q", description="Texto a buscar", required=True, type=str),
             OpenApiParameter(name="limit", description="Registros por página", required=False, type=int, default=10),
             OpenApiParameter(name="page", description="Número de página", required=False, type=int, default=1),
-            OpenApiParameter(name="filter", description="Campo por el cual filtrar", required=False, type=str, default="id_registro "),
+            OpenApiParameter(name="filter", description="Campo por el cual filtrar", required=False, type=str, default="titulo"),
             OpenApiParameter(name="order", description="Orden de los resultados (asc/desc)", required=False, type=str, default="asc"),
        
         ],
@@ -129,12 +132,17 @@ class RegistroViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def search(self, request):
         tipo = request.query_params.get("tipo")
-        texto = request.query_params.get("q")
+        texto = request.query_params.get("q", "")
+        if not texto.strip():
+            return Response({"error": "El parámetro 'q' es obligatorio."}, status=400)
         limit = int(request.query_params.get("limit", 10))
         page = int(request.query_params.get("page", 1))
-        filter = request.query_params.get("filter", "id_registro")
+        filter = request.query_params.get("filter", "titulo")
         order = request.query_params.get("order", "desc")
+        # logger.debug("Buscando registros", extra={"tipo": tipo, "q": texto})
 
+        logger.debug("Buscando registros", extra={"tipo": tipo, "q": texto})
+        
         if not tipo:
             return Response(
                 {"error": "El parámetro 'tipo' es obligatorios."},

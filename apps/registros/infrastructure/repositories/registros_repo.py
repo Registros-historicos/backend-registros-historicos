@@ -145,13 +145,14 @@ class PostgresRegistroRepository(RegistroRepository):
             return total
 
             
-    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int) -> list[dict]:
+    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int, filter: str, order: str) -> list[dict]:
         """ Busca registros por texto con paginación """
         with connection.cursor() as cursor:
+            print(tipo_registro_param, texto, limit, offset, filter, order)
             cursor.execute("""
                 SELECT *
-                FROM f_busca_registros_por_texto(%s, %s, %s, %s)
-            """, [tipo_registro_param, texto, limit, offset])
+                FROM f_busca_registros_por_texto(%s, %s, %s, %s, %s, %s)
+            """, [tipo_registro_param, texto, limit, offset, filter, order])
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
     
