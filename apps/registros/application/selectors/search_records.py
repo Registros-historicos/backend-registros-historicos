@@ -1,4 +1,6 @@
 from apps.registros.infrastructure.repositories.registros_repo import PostgresRegistroRepository
+import logging
+logger = logging.getLogger(__name__)
 
 def search_records(tipo_registro_param: int, texto: str, page: int, limit: int, filter: dict, order: dict) -> dict:
     """ 
@@ -8,10 +10,10 @@ def search_records(tipo_registro_param: int, texto: str, page: int, limit: int, 
 
     repository = PostgresRegistroRepository()
     offset = (page - 1) * limit
-    print(offset)
+    logger.debug("Buscando registros", offset)
 
     total = repository.contar_por_texto(tipo_registro_param, texto)
-    results = repository.listar_por_tipo(tipo_registro_param, limit, offset, filter, order)
+    results = repository.buscar_por_texto(tipo_registro_param, texto, limit, offset, filter, order)
 
     return {
         'total': total,

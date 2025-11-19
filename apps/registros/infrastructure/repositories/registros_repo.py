@@ -145,13 +145,14 @@ class PostgresRegistroRepository(RegistroRepository):
             return total
 
             
-    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int) -> list[dict]:
+    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int, filter: str, order: str) -> list[dict]:
         """ Busca registros por texto con paginación """
         with connection.cursor() as cursor:
+            print(tipo_registro_param, texto, limit, offset, filter, order)
             cursor.execute("""
                 SELECT *
-                FROM f_busca_registros_por_texto(%s, %s, %s, %s)
-            """, [tipo_registro_param, texto, limit, offset])
+                FROM f_busca_registros_por_texto(%s, %s, %s, %s, %s, %s)
+            """, [tipo_registro_param, texto, limit, offset, filter, order])
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -270,3 +271,32 @@ class PostgresRegistroRepository(RegistroRepository):
             ON CONFLICT DO NOTHING;
         """
         run_query(query, [id_registro, id_investigador])
+
+    def obtener_investigadores_por_registro(self, id_registro: int):
+        query = """
+            SELECT DISTINCT ON (i.id_investigador)
+                i.id_investigador,
+                i.curp,
+                i.nombre,
+                i.ape_pat,
+                i.ape_mat,
+                i.sexo_param,
+                i.tipo_investigador_param,
+                a.id_adscripcion,
+                a.id_institucion,
+                a.departamento_param,
+                a.programa_educativo_param,
+                a.cuerpo_academico_param,
+                a.fec_ini,
+                a.fec_fin
+            FROM public.registro_investigador ri
+            JOIN public.investigador i
+            ON i.id_investigador = ri.id_investigador
+            LEFT JOIN public.adscripcion a
+            ON a.id_investigador = i.id_investigador
+            AND (a.fec_fin IS NULL OR a.fec_fin > NOW())
+            WHERE ri.id_registro = %s
+            ORDER BY i.id_investigador, a.fec_ini DESC;
+        """
+        return run_query(query, [id_registro], fetchall=True) or []
+
