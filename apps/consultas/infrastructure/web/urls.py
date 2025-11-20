@@ -26,4 +26,5 @@ urlpatterns = [
     path('usuarios/por-estados-cepat/', ConsultaViewSet.as_view({'get': 'usuarios_por_estados_cepat_view'}), name='usuarios-por-estados-cepat'),
     path('programas-educativos/', ConsultaViewSet.as_view({'get': 'programas_educativos_view'}), name='programas-educativos'),
     path('registros/por-programa/', ConsultaViewSet.as_view({'get': 'registros_por_programa_view'}), name='registros-por-programa'),
+    path('coordinadores/por-cepat/', ConsultaViewSet.as_view({'get': 'coordinadores_por_cepat_view'}), name='coordinadores-por-cepat'),
 ]
