@@ -20,6 +20,7 @@ from apps.consultas.application.selectors.institutions_filtered_queries import i
 from apps.consultas.application.selectors.investigador_por_coordinador import investigadores_por_coordinador_selector
 from apps.consultas.application.selectors.usuarios_por_estados_cepat import usuarios_por_estados_cepat_selector
 from apps.consultas.application.selectors.programs_educational_queries import registros_por_programa_educativo_selector
+from apps.consultas.application.selectors.registros_por_programa_selector import registros_por_programa_selector
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     CategoriaInvestigadorSerializer,
@@ -34,6 +35,7 @@ from apps.consultas.infrastructure.web.serializer import (
     InvestigadorPorCoordinadorSerializer,
     UsuarioPorEstadoCepatSerializer,
     ProgramaEducativoSerializer,
+    RegistrosPorProgramaSerializer,
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
@@ -312,4 +314,14 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def programas_educativos_view(self, request):
         resultado = registros_por_programa_educativo_selector(request.user)
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="[Coordinador] Conteo de registros por Programa Educativo",
+        description="Devuelve la cantidad de registros agrupados por el programa educativo de la institución del coordinador.",
+        responses={200: RegistrosPorProgramaSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_programa_view(self, request):
+        resultado = registros_por_programa_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
