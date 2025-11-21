@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ConsultaViewSet
+from .views import ConsultaViewSet, ConsultaExcelViewSet
 
 router = DefaultRouter()
 router.register(r'tableros', ConsultaViewSet, basename='tableros')
+router.register(r'excel', ConsultaExcelViewSet, basename='excel')
 
 
 urlpatterns = [
@@ -27,4 +28,13 @@ urlpatterns = [
     path('programas-educativos/', ConsultaViewSet.as_view({'get': 'programas_educativos_view'}), name='programas-educativos'),
     path('registros/por-programa/', ConsultaViewSet.as_view({'get': 'registros_por_programa_view'}), name='registros-por-programa'),
     path('coordinadores/por-cepat/', ConsultaViewSet.as_view({'get': 'coordinadores_por_cepat_view'}), name='coordinadores-por-cepat'),
+
+#   Excel exports endpoints
+    path('excel/entidades/top10', ConsultaExcelViewSet.as_view({'get': 'entidades_top10_excel'}), name='excel-entidades-top10'),
+    path('excel/institutos/top10', ConsultaExcelViewSet.as_view({'get': 'institutos_top10_excel'}), name='excel-institutos-top10'),
+    path('excel/institutos/descentralizados', ConsultaExcelViewSet.as_view({'get': 'institutos_descentralizados_excel'}), name='excel-institutos-descentralizados'),
+    path('excel/institutos/federales', ConsultaExcelViewSet.as_view({'get': 'institutos_federales_excel'}), name='excel-institutos-federales'),
+    path('excel/institutos/todos', ConsultaExcelViewSet.as_view({'get': 'all_institutos_excel'}), name='excel-todos-institutos'),
+    path('excel/sectores/economicos', ConsultaExcelViewSet.as_view({'get': 'sectores_economicos_excel'}), name='excel-sectores-economicos'),
+
 ]
