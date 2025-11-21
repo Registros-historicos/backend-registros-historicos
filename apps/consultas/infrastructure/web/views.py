@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor, requests_by_type_selector
+from apps.consultas.application.selectors.export_excel import dataframe_to_styled_excel_bytes
+from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor, \
+    requests_by_type_selector
 from apps.consultas.application.selectors.institutions_top10_queries import instituciones_top10
 from apps.consultas.application.selectors.category_researchers import conteo_investigadores_por_categoria_selector
 from apps.consultas.application.selectors.federal_entities_top10_queries import entidades_top10
@@ -14,7 +16,6 @@ from apps.consultas.application.selectors.institutions_all_queries import instit
 from apps.consultas.application.selectors.federal_entities_all_queries import entidades_all
 from apps.consultas.application.selectors.sectors_activity_queries import sectores_actividad_top10
 from apps.consultas.application.selectors.records_by_month_queries import registros_por_mes_selector
-from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
 from apps.consultas.application.selectors.records_by_period import registros_por_periodo_selector
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.application.selectors.investigador_por_coordinador import investigadores_por_coordinador_selector
@@ -41,12 +42,13 @@ from apps.consultas.infrastructure.web.serializer import (
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
+import pandas as pd
+from django.http import FileResponse
 
 
 class ConsultaViewSet(viewsets.ViewSet):
-    
     permission_classes = [IsAuthenticated, HasRole]
-    allowed_roles = [35, 36, 37] # Permite acceso a Administrador (35), Coordinador (36) y CEPAT (37)
+    allowed_roles = [35, 36, 37]  # Permite acceso a Administrador (35), Coordinador (36) y CEPAT (37)
     """
     ViewSet para tableros de consultas.
     """
@@ -58,7 +60,6 @@ class ConsultaViewSet(viewsets.ViewSet):
         summary="Top 10 entidades federativas por número de registros",
         responses={200: EntidadTopSerializer(many=True)},
     )
-
     @action(detail=False, methods=["get"])
     def entidades_top10_view(self, request):
         resultado = entidades_top10()
@@ -72,15 +73,11 @@ class ConsultaViewSet(viewsets.ViewSet):
     def records_by_status_view(self, request):
         resultado = conteo_registros_por_estatus_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-        summary="registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
-        responses={200: EntidadTopSerializer(many=True)},
-    
+
     @action(detail=False, methods=["get"])
     def categoria_investigadores_view(self, request):
         resultado = conteo_investigadores_por_categoria_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-        summary="registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
-        responses={200: CategoriaInvestigadorSerializer(many=True)},
 
     @extend_schema(
         summary="Top 10 instituciones por número de registros",
@@ -100,7 +97,6 @@ class ConsultaViewSet(viewsets.ViewSet):
         resultado = conteo_registros_por_sector_selector()
         return Response(resultado, status=status.HTTP_200_OK)
 
-
     @extend_schema(
         summary="Conteo de registros por sexo de investigador",
         responses={200: RegistrosPorSexoSerializer(many=True)},
@@ -109,7 +105,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     def registros_por_sexo_view(self, request):
         resultado = registros_por_sexo_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
         summary="Requests grouped by type (IMPI)",
         responses={200: RequestTypeSerializer(many=True)},
@@ -128,7 +124,6 @@ class ConsultaViewSet(viewsets.ViewSet):
         result = requests_by_type_selector(45, request.user)  # 45 = tipo INDAUTOR
         return Response(result, status=status.HTTP_200_OK)
 
-
     @extend_schema(
         summary="Todas las instituciones con número de registros",
         responses={200: InstitucionAllSerializer(many=True)},
@@ -146,7 +141,7 @@ class ConsultaViewSet(viewsets.ViewSet):
     def entidades_all_view(self, request):
         resultado = entidades_all()
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
         summary="Top 10 registros agrupados por sector/actividad económica",
         responses={200: SectorActividadSerializer(many=True)},
@@ -155,10 +150,10 @@ class ConsultaViewSet(viewsets.ViewSet):
     def sectores_actividad_view(self, request):
         resultado = sectores_actividad_top10()
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
-    summary="Todos los registros agrupados por sector/actividad económica",
-    responses={200: SectorActividadSerializer(many=True)},
+        summary="Todos los registros agrupados por sector/actividad económica",
+        responses={200: SectorActividadSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def sectores_actividad_all_view(self, request):
@@ -199,7 +194,6 @@ class ConsultaViewSet(viewsets.ViewSet):
         resultado = registros_por_mes_selector(anio, request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
-    
     @extend_schema(
         summary="Conteo de registros agrupados por año, mes y tipo de registro",
         parameters=[
@@ -251,7 +245,6 @@ class ConsultaViewSet(viewsets.ViewSet):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
 
     @extend_schema(
         summary="Instituciones filtradas por tipo (Federal/Descentralizado)",
@@ -286,9 +279,9 @@ class ConsultaViewSet(viewsets.ViewSet):
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
-            summary="[Coordinador] Lista los investigadores de la institución del coordinador",
-            responses={200: InvestigadorPorCoordinadorSerializer(many=True)},
-        )
+        summary="[Coordinador] Lista los investigadores de la institución del coordinador",
+        responses={200: InvestigadorPorCoordinadorSerializer(many=True)},
+    )
     @action(detail=False, methods=["get"])
     def investigadores_por_coordinador_view(self, request):
         """
@@ -308,10 +301,10 @@ class ConsultaViewSet(viewsets.ViewSet):
     def usuarios_por_estados_cepat_view(self, request):
         resultado = usuarios_por_estados_cepat_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
-    summary="Conteo de registros por programa educativo",
-    responses={200: ProgramaEducativoSerializer(many=True)},
+        summary="Conteo de registros por programa educativo",
+        responses={200: ProgramaEducativoSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def programas_educativos_view(self, request):
@@ -337,3 +330,327 @@ class ConsultaViewSet(viewsets.ViewSet):
     def coordinadores_por_cepat_view(self, request):
         resultado = coordinadores_por_cepat_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
+
+
+class ConsultaExcelViewSet(viewsets.ViewSet):
+    allowed_roles = [35, 36, 37]
+    """
+    ViewSet para tableros de consultas.
+    """
+    allowed_roles = [35, 36, 37]
+
+    def _generar_respuesta_excel(
+            self,
+            data_list,
+            mapping,
+            sheet_name,
+            table_name,
+            file_name,
+            report_title=None,
+            add_pie_chart=False,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+    ):
+        try:
+            # 1. Normalización de datos (Igual que antes)
+            if hasattr(data_list, "data"):
+                data = data_list.data
+            else:
+                data = data_list
+
+            rows = []
+            if isinstance(data, dict) and "data" in data:
+                rows = data["data"]
+            elif isinstance(data, (list, tuple)):
+                rows = data
+            elif isinstance(data, dict):
+                rows = [data]
+
+            # 2. DataFrame y Filtrado (Igual que antes)
+            if rows:
+                df = pd.DataFrame(rows)
+            else:
+                df = pd.DataFrame([{"Info": "Sin resultados"}])
+
+            cols = [c for c in mapping.keys() if c in df.columns]
+            if cols: df = df[cols]
+
+            # 3. Generar Excel PASANDO LOS NUEVOS PARÁMETROS
+            excel_io = dataframe_to_styled_excel_bytes(
+                df,
+                sheet_name=sheet_name,
+                table_name=table_name,
+                column_mapping=mapping,
+                report_title=report_title,
+                add_pie_chart=add_pie_chart,
+                chart_labels_col_idx=chart_labels_col_idx,
+                chart_data_col_idx=chart_data_col_idx
+            )
+
+            response = FileResponse(excel_io, as_attachment=True, filename=file_name)
+            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            return response
+
+        except Exception as e:
+            print(f"Error generando Excel {file_name}: {str(e)}")
+            return Response({"error": str(e)}, status=500)
+
+
+    @action(detail=False, methods=["get"])
+    def entidades_top10_excel(self, request):
+        data = entidades_top10()
+        mapping = {
+            "entidad_nombre": "Entidad",
+            "total": "Total de registros"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="TopEntidades",
+            table_name="TablaEntidades",
+            file_name="reporte_entidades.xlsx",
+            report_title="Top 10 Entidades Federativas"
+        )
+
+    @action(detail=False, methods=["get"])
+    def institutos_top10_excel(self, request):
+        data = instituciones_top10()
+        mapping = {
+            "institucion_nombre": "Institución",
+            "total": "Total de registros"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="TopInstitutos",
+            table_name="TablaInstitutos",
+            file_name="reporte_top10_instituciones.xlsx",
+            report_title="TOP 10 INSTITUCIONES CON MÁS REGISTROS"
+        )
+
+
+    @action(detail=False, methods=["get"])
+    def institutos_descentralizados_excel(self, request):
+        data = instituciones_filtradas_selector(tipo_institucion=123)
+
+        mapping = {
+            "institucion_nombre": "Institución",
+            "total": "Total de registros"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Institutos Descentralizados",
+            table_name="TablaDescentralizados",
+            file_name="reporte_institutos_descentralizados.xlsx",
+            report_title="INSTITUCIONES DESCENTRALIZADAS CON MÁS REGISTROS"
+        )
+
+    @action(detail=False, methods=["get"])
+    def institutos_federales_excel(self, request):
+        data = instituciones_filtradas_selector(tipo_institucion=122)
+
+        mapping = {
+            "institucion_nombre": "Institución",
+            "total": "Total de registros"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Institutos Federales",
+            table_name="TablaFederales",
+            file_name="reporte_institutos_federales.xlsx",
+            report_title="INSTITUCIONES FEDERALES CON MÁS REGISTROS"
+        )
+
+    @action(detail=False, methods=["get"])
+    def all_institutos_excel(self, request):
+        data = instituciones_all(user=request.user)
+
+        mapping = {
+            "institucion_nombre": "Institución",
+            "total": "Total de registros"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Todos los Institutos",
+            table_name="TablaInstitutos",
+            file_name="reporte_todos_los_institutos.xlsx",
+            report_title="TODAS LAS INSTITUCIONES CON REGISTROS"
+        )
+
+    @action(detail=False, methods=["get"])
+    def sectores_economicos_excel(self, request):
+        from apps.consultas.application.selectors.sectors_activity_all_selector import sectores_actividad_all
+        data = sectores_actividad_all(request.user)
+
+        mapping = {
+            "actividad_nombre": "Sectores Económicos",
+            "sector_nombre": "Tipo de Sector",
+            "total": "Total de registros"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Sectores Económicos",
+            table_name="TablaSectores",
+            file_name="reporte_sectores_economicos.xlsx",
+            report_title="SECTORES ECONÓMICOS CON MÁS REGISTROS"
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_impi_excel(self, request):
+        data = requests_by_type_selector(44, request.user)  # 44 = tipo IMPI
+        mapping = {
+            "tipo_registro_nombre": "Tipo de Registro",
+            "rama_nombre": "Nombre de la Rama",
+            "total": "Total de Solicitudes"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="IMPI",
+            table_name="TablaIMPI",
+            file_name="reporte_impi_.xlsx",
+            report_title="REGISTROS IMPI",
+            add_pie_chart=True,
+            chart_labels_col_idx=2,
+            chart_data_col_idx=3
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_indautor_excel(self, request):
+        data = requests_by_type_selector(45, request.user)
+        mapping = {
+            "tipo_registro_nombre": "Tipo de Registro",
+            "rama_nombre": "Nombre de la Rama",
+            "total": "Total de Solicitudes"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="INDAUTOR",
+            table_name="TablaINDAUTOR",
+            file_name="reporte_indautor.xlsx",
+            report_title="REGISTROS INDAUTOR",
+            add_pie_chart=True,
+            chart_labels_col_idx=2,
+            chart_data_col_idx=3
+        )
+
+    @action(detail=False, methods=["get"])
+    def categorias_excel(self, request):
+        data = conteo_investigadores_por_categoria_selector(request.user)
+        mapping = {
+            "categoria": "Registros por categoría",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Ceategorías",
+            table_name="TablaCategorías",
+            file_name="reporte_categorias.xlsx",
+            report_title="REGISTROS POR CATEGORÍA DE INVESTIGADOR",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def sexos_excel(self, request):
+        data =  registros_por_sexo_selector(request.user)
+        mapping = {
+            "sexo": "Registros por sexo",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Sexo",
+            table_name="TablaSexo",
+            file_name="reporte_investigadores_por_sexo.xlsx",
+            report_title="REGISTROS DE INVESTIGADORES POR SEXO",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_estatus_excel(self, request):
+        data = conteo_registros_por_estatus_selector(request.user)
+        mapping = {
+            "estatus": "Estatus actual",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Estatus",
+            table_name="TablaEstatus",
+            file_name="reporte_estatus_registros.xlsx",
+            report_title="REPORTE DE REGISTROS POR ESTATUS",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_por_mes_excel(self, request):
+        year = request.query_params.get("anio")
+
+        if not year:
+            return Response(
+                {"error": "El parámetro 'anio' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'anio' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = registros_por_mes_selector(year, request.user)
+        meses_map = {
+            1: "Enero",
+            2: "Febrero",
+            3: "Marzo",
+            4: "Abril",
+            5: "Mayo",
+            6: "Junio",
+            7: "Julio",
+            8: "Agosto",
+            9: "Septiembre",
+            10: "Octubre",
+            11: "Noviembre",
+            12: "Diciembre",
+        }
+
+        data = [
+            {**item, "mes": meses_map.get(item.get("mes"), "Desconocido")}
+            for item in data
+        ]
+
+        mapping = {
+            "mes": "Mes",
+            "total": "Total"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name=f"Registros {year}",
+            table_name=f"TablaRegistros{year}",
+            file_name=f"reporte_registros_por_mes_{year}.xlsx",
+            report_title=f"REPORTE DE REGISTROS POR MES - {year}",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
