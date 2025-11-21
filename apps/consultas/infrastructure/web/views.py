@@ -73,15 +73,11 @@ class ConsultaViewSet(viewsets.ViewSet):
     def records_by_status_view(self, request):
         resultado = conteo_registros_por_estatus_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-        summary = "registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
-        responses = {200: EntidadTopSerializer(many=True)},
 
     @action(detail=False, methods=["get"])
     def categoria_investigadores_view(self, request):
         resultado = conteo_investigadores_por_categoria_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
-        summary = "registros agrupados por tipo de investigador (Docente, Alumno, Administrativo)",
-        responses = {200: CategoriaInvestigadorSerializer(many=True)},
 
     @extend_schema(
         summary="Top 10 instituciones por número de registros",
@@ -343,12 +339,20 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
     """
     allowed_roles = [35, 36, 37]
 
-    def _generar_respuesta_excel(self, data_list, mapping, sheet_name, table_name, file_name, report_title):
-        """
-        Recibe 'report_title' y lo pasa a la función de Excel.
-        """
+    def _generar_respuesta_excel(
+            self,
+            data_list,
+            mapping,
+            sheet_name,
+            table_name,
+            file_name,
+            report_title=None,
+            add_pie_chart=False,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+    ):
         try:
-            # 1. Normalización
+            # 1. Normalización de datos (Igual que antes)
             if hasattr(data_list, "data"):
                 data = data_list.data
             else:
@@ -362,24 +366,25 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             elif isinstance(data, dict):
                 rows = [data]
 
-            # 2. DataFrame
+            # 2. DataFrame y Filtrado (Igual que antes)
             if rows:
                 df = pd.DataFrame(rows)
             else:
                 df = pd.DataFrame([{"Info": "Sin resultados"}])
 
-            # 3. Filtrar columnas mapping
             cols = [c for c in mapping.keys() if c in df.columns]
-            if cols:
-                df = df[cols]
+            if cols: df = df[cols]
 
-            # 4. Generar Excel
+            # 3. Generar Excel PASANDO LOS NUEVOS PARÁMETROS
             excel_io = dataframe_to_styled_excel_bytes(
                 df,
                 sheet_name=sheet_name,
                 table_name=table_name,
                 column_mapping=mapping,
-                report_title=report_title
+                report_title=report_title,
+                add_pie_chart=add_pie_chart,
+                chart_labels_col_idx=chart_labels_col_idx,
+                chart_data_col_idx=chart_data_col_idx
             )
 
             response = FileResponse(excel_io, as_attachment=True, filename=file_name)
@@ -387,7 +392,9 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             return response
 
         except Exception as e:
+            print(f"Error generando Excel {file_name}: {str(e)}")
             return Response({"error": str(e)}, status=500)
+
 
     @action(detail=False, methods=["get"])
     def entidades_top10_excel(self, request):
@@ -412,8 +419,6 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             "institucion_nombre": "Institución",
             "total": "Total de registros"
         }
-
-        # 3. Reutilizar la misma lógica
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
@@ -498,4 +503,154 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             report_title="SECTORES ECONÓMICOS CON MÁS REGISTROS"
         )
 
+    @action(detail=False, methods=["get"])
+    def registros_impi_excel(self, request):
+        data = requests_by_type_selector(44, request.user)  # 44 = tipo IMPI
+        mapping = {
+            "tipo_registro_nombre": "Tipo de Registro",
+            "rama_nombre": "Nombre de la Rama",
+            "total": "Total de Solicitudes"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="IMPI",
+            table_name="TablaIMPI",
+            file_name="reporte_impi_.xlsx",
+            report_title="REGISTROS IMPI",
+            add_pie_chart=True,
+            chart_labels_col_idx=2,
+            chart_data_col_idx=3
+        )
 
+    @action(detail=False, methods=["get"])
+    def registros_indautor_excel(self, request):
+        data = requests_by_type_selector(45, request.user)
+        mapping = {
+            "tipo_registro_nombre": "Tipo de Registro",
+            "rama_nombre": "Nombre de la Rama",
+            "total": "Total de Solicitudes"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="INDAUTOR",
+            table_name="TablaINDAUTOR",
+            file_name="reporte_indautor.xlsx",
+            report_title="REGISTROS INDAUTOR",
+            add_pie_chart=True,
+            chart_labels_col_idx=2,
+            chart_data_col_idx=3
+        )
+
+    @action(detail=False, methods=["get"])
+    def categorias_excel(self, request):
+        data = conteo_investigadores_por_categoria_selector(request.user)
+        mapping = {
+            "categoria": "Registros por categoría",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Ceategorías",
+            table_name="TablaCategorías",
+            file_name="reporte_categorias.xlsx",
+            report_title="REGISTROS POR CATEGORÍA DE INVESTIGADOR",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def sexos_excel(self, request):
+        data =  registros_por_sexo_selector(request.user)
+        mapping = {
+            "sexo": "Registros por sexo",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Sexo",
+            table_name="TablaSexo",
+            file_name="reporte_investigadores_por_sexo.xlsx",
+            report_title="REGISTROS DE INVESTIGADORES POR SEXO",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_estatus_excel(self, request):
+        data = conteo_registros_por_estatus_selector(request.user)
+        mapping = {
+            "estatus": "Estatus actual",
+            "total": "Total"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Estatus",
+            table_name="TablaEstatus",
+            file_name="reporte_estatus_registros.xlsx",
+            report_title="REPORTE DE REGISTROS POR ESTATUS",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
+
+    @action(detail=False, methods=["get"])
+    def registros_por_mes_excel(self, request):
+        year = request.query_params.get("anio")
+
+        if not year:
+            return Response(
+                {"error": "El parámetro 'anio' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            year = int(year)
+        except ValueError:
+            return Response(
+                {"error": "El parámetro 'anio' debe ser un número entero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = registros_por_mes_selector(year, request.user)
+        meses_map = {
+            1: "Enero",
+            2: "Febrero",
+            3: "Marzo",
+            4: "Abril",
+            5: "Mayo",
+            6: "Junio",
+            7: "Julio",
+            8: "Agosto",
+            9: "Septiembre",
+            10: "Octubre",
+            11: "Noviembre",
+            12: "Diciembre",
+        }
+
+        data = [
+            {**item, "mes": meses_map.get(item.get("mes"), "Desconocido")}
+            for item in data
+        ]
+
+        mapping = {
+            "mes": "Mes",
+            "total": "Total"
+        }
+
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name=f"Registros {year}",
+            table_name=f"TablaRegistros{year}",
+            file_name=f"reporte_registros_por_mes_{year}.xlsx",
+            report_title=f"REPORTE DE REGISTROS POR MES - {year}",
+            add_pie_chart=True,
+            chart_labels_col_idx=1,
+            chart_data_col_idx=2
+        )
