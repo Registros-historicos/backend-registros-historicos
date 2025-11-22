@@ -661,3 +661,19 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+    @action(detail=False, methods=["get"])
+    def registros_por_programas_educativos_excel(self, request):
+        data = registros_por_programa_selector(request.user)
+        mapping = {
+            "programa_educativo": "Programa educativo",
+            "total_registros": "Total de registros"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="ProgramasEducativos",
+            table_name="TablaProgramasEducativos",
+            file_name="reporte_programas_educativos.xlsx",
+                report_title="REGISTROS POR PROGRAMAS EDUCATIVOS"
+        )
