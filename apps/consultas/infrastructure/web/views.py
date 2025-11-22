@@ -650,7 +650,7 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
                 df,
                 sheet_name=f"Registros {year}",
                 table_name=f"TablaRegistros{year}",
-                report_title=f"REPORTE DE REGISTROS POR MES - {year}",
+                report_title=f"REPORTE DE REGISTROS DE {year}",
                 chart_labels_col_idx=1,
                 chart_data_col_idx=2
             )
