@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from apps.consultas.application.selectors.export_excel import dataframe_to_styled_excel_bytes
+from apps.consultas.application.selectors.export_excel import dataframe_to_styled_excel_bytes, \
+    dataframe_to_excel_registros_mes
 from apps.consultas.application.selectors.requests_by_type_queries import requests_impi, requests_indautor, \
     requests_by_type_selector
 from apps.consultas.application.selectors.institutions_top10_queries import instituciones_top10
@@ -333,7 +334,6 @@ class ConsultaViewSet(viewsets.ViewSet):
 
 
 class ConsultaExcelViewSet(viewsets.ViewSet):
-    allowed_roles = [35, 36, 37]
     """
     ViewSet para tableros de consultas.
     """
@@ -605,52 +605,59 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         year = request.query_params.get("anio")
 
         if not year:
-            return Response(
-                {"error": "El parámetro 'anio' es requerido"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "El parámetro 'anio' es requerido"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             year = int(year)
         except ValueError:
-            return Response(
-                {"error": "El parámetro 'anio' debe ser un número entero"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        data = registros_por_mes_selector(year, request.user)
+            return Response({"error": "El parámetro 'anio' debe ser un número entero"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        raw_data = registros_por_mes_selector(year, request.user)
+
         meses_map = {
-            1: "Enero",
-            2: "Febrero",
-            3: "Marzo",
-            4: "Abril",
-            5: "Mayo",
-            6: "Junio",
-            7: "Julio",
-            8: "Agosto",
-            9: "Septiembre",
-            10: "Octubre",
-            11: "Noviembre",
-            12: "Diciembre",
+            1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio",
+            7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
         }
+        processed_data = []
+        conteo_por_mes = {}
 
-        data = [
-            {**item, "mes": meses_map.get(item.get("mes"), "Desconocido")}
-            for item in data
-        ]
+        for item in raw_data:
+            mes_num = item.get("mes")
+            nombre_mes = meses_map.get(mes_num, "Desconocido")
 
-        mapping = {
-            "mes": "Mes",
-            "total": "Total"
-        }
+            veces_visto = conteo_por_mes.get(mes_num, 0)
+            fuente = "IMPI" if veces_visto == 0 else "Indautor"
+            conteo_por_mes[mes_num] = veces_visto + 1
 
-        return self._generar_respuesta_excel(
-            data_list=data,
-            mapping=mapping,
-            sheet_name=f"Registros {year}",
-            table_name=f"TablaRegistros{year}",
-            file_name=f"reporte_registros_por_mes_{year}.xlsx",
-            report_title=f"REPORTE DE REGISTROS POR MES - {year}",
-            add_pie_chart=True,
-            chart_labels_col_idx=1,
-            chart_data_col_idx=2
-        )
+            processed_data.append({
+                "concepto": f"{nombre_mes} - {fuente}",
+                "total": item.get("total")
+            })
+
+        if processed_data:
+            df = pd.DataFrame(processed_data)
+        else:
+            df = pd.DataFrame([{"concepto": "Sin datos", "total": 0}])
+
+        df = df.rename(columns={
+            "concepto": "Mes / Fuente",
+            "total": "Total Registros"
+        })
+        file_name = f"reporte_registros_por_mes_{year}.xlsx"
+        try:
+            excel_io = dataframe_to_excel_registros_mes(
+                df,
+                sheet_name=f"Registros {year}",
+                table_name=f"TablaRegistros{year}",
+                report_title=f"REPORTE DE REGISTROS POR MES - {year}",
+                chart_labels_col_idx=1,
+                chart_data_col_idx=2
+            )
+
+            response = FileResponse(excel_io, as_attachment=True, filename=file_name)
+            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            return response
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
