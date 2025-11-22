@@ -42,4 +42,5 @@ urlpatterns = [
     path('excel/registros/sexo', ConsultaExcelViewSet.as_view({'get': 'sexos_excel'}), name='excel-registros-sexo'),
     path('excel/registros/estatus', ConsultaExcelViewSet.as_view({'get': 'registros_estatus_excel'}), name='excel-estatus'),
     path('excel/registros/mes/', ConsultaExcelViewSet.as_view({'get': 'registros_por_mes_excel'}), name='registros-por-mes'),
+    path('excel/registros/programa/educativo', ConsultaExcelViewSet.as_view({'get': 'registros_por_programas_educativos_excel'}), name='registros-por-programa-educativo'),
 ]
