@@ -4,6 +4,7 @@ from apps.registros.domain.ports import RegistroRepository
 from psycopg2.extensions import AsIs
 from django.db import connection, transaction
 from apps.registros.infrastructure.repositories.pg_utils import run_query
+from datetime import datetime, date
 
 class PostgresRegistroRepository(RegistroRepository):
 
@@ -58,24 +59,40 @@ class PostgresRegistroRepository(RegistroRepository):
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT f_actualiza_resgistro_por_pk(
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s,  -- 1  id_registro
+                        %s,  -- 3  titulo
+                        %s,  -- 4  tipo_ingreso_param
+                        %s,  -- 5  id_usuario
+                        %s,  -- 6  rama_param
+                        %s,  -- 7  fec_expedicion
+                        %s,  -- 8  observaciones
+                        %s,  -- 9  archivo
+                        %s,  -- 10 estatus_param
+                        %s,  -- 11 medio_ingreso_param
+                        %s,  -- 12 tipo_registro_param
+                        %s,  -- 13 fec_solicitud
+                        %s,  -- 14 descripcion
+                        %s,  -- 16 tecnologico_origen
+                        %s,  -- 17 anio_renovacion
+                        %s   -- 18 id_subsector
                     )
                 """, [
                     id_registro,
-                registro.no_expediente,
-                registro.titulo,
-                registro.tipo_ingreso_param,
-                registro.id_usuario,
-                registro.rama_param,
-                registro.fec_expedicion,
-                registro.observaciones,
-                registro.archivo,
-                registro.estatus_param,
-                registro.medio_ingreso_param,
-                registro.tipo_registro_param,
-                registro.fec_solicitud,
-                registro.descripcion,
-                registro.tipo_sector_param,
+                    registro.titulo,
+                    registro.tipo_ingreso_param,
+                    registro.id_usuario,
+                    registro.rama_param,
+                    registro.fec_expedicion,
+                    registro.observaciones,
+                    registro.archivo,
+                    registro.estatus_param,
+                    registro.medio_ingreso_param,
+                    registro.tipo_registro_param,
+                    registro.fec_solicitud,
+                    registro.descripcion,
+                    registro.tecnologico_origen,
+                    registro.anio_renovacion,
+                    registro.id_subsector,
                 ])
 
                 cursor.execute("SELECT * FROM registro WHERE id_registro = %s", [id_registro])
@@ -104,23 +121,31 @@ class PostgresRegistroRepository(RegistroRepository):
             resultado = cursor.fetchall()
             return resultado
 
+    def _to_date_or_none(self, value):
+        if isinstance(value, datetime):
+            return value.date()
+        return value
+
     def _mapear_row_a_registro(self, row) -> Registro:
         return Registro(
             id_registro=row[0],
-            no_expediente=row[1],
+            no_expediente=None,
             titulo=row[2],
             tipo_ingreso_param=row[3],
-            id_usuario=row[4],
-            rama_param=row[5],
-            fec_expedicion=row[6],
-            observaciones=row[7],
-            archivo=row[8],
-            estatus_param=row[9],
-            medio_ingreso_param=row[10],
-            tipo_registro_param=row[11],
-            fec_solicitud=row[12],
-            descripcion=row[13],
-            tipo_sector_param=row[14],
+            rama_param=row[4],
+            fec_expedicion=self._to_date_or_none(row[5]),
+            observaciones=row[6],
+            archivo=row[7],
+            estatus_param=row[8],
+            medio_ingreso_param=row[9],
+            tipo_registro_param=row[10],
+            fec_solicitud=self._to_date_or_none(row[11]),
+            descripcion=row[12],
+            id_usuario=row[13],
+            tipo_sector_param=None,
+            tecnologico_origen=row[15],
+            anio_renovacion=row[16],
+            id_subsector=row[17],
         )
 
     def listar_por_tipo(self, tipo_registro_param: int, limit: int, offset: int, filter: str, order: str) -> list[dict]:

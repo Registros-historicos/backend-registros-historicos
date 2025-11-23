@@ -4,23 +4,25 @@ from typing import Optional
 
 @dataclass
 class Registro:
-    no_expediente: str
-    titulo: str
-    descripcion: Optional[str]
-    fec_solicitud: Optional[str]
-    no_titulo: Optional[str]
-    estatus_param: Optional[int]
-    rama_param: Optional[int]
-    medio_ingreso_param: Optional[int]
-    tecnologico_origen: Optional[str]
-    anio_renovacion: Optional[int]
-    id_subsector: Optional[int]
-    fec_expedicion: Optional[str]
-    archivo: Optional[str]
-    observaciones: Optional[str]
-    tipo_registro_param: Optional[int]  # 44 IMPI, 45 INDAUTOR (ajusta a tus IDs)
-    tipo_ingreso_param: Optional[int]   # 42 / 44 o los que uses
-    id_usuario: int
+    id_registro: Optional[int] = None
+    no_expediente: Optional[str] = None
+    titulo: str = ''
+    descripcion: Optional[str] = None
+    fec_solicitud: Optional[str] = None
+    no_titulo: Optional[str] = None
+    estatus_param: Optional[int] = None
+    rama_param: Optional[int] = None
+    medio_ingreso_param: Optional[int] = None
+    tecnologico_origen: Optional[str] = None
+    anio_renovacion: Optional[int] = None
+    id_subsector: Optional[int] = None
+    fec_expedicion: Optional[str] = None
+    archivo: Optional[str] = None
+    observaciones: Optional[str] = None
+    tipo_registro_param: Optional[int] = None
+    tipo_ingreso_param: Optional[int] = None
+    tipo_sector_param: Optional[int] = None
+    id_usuario: int = 0
 
 @dataclass
 class Investigador:
