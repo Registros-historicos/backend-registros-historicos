@@ -79,6 +79,11 @@ class RegistrosPorProgramaSerializer(serializers.Serializer):
     programa_educativo = serializers.CharField()
     total_registros = serializers.IntegerField()
 
+class DepartamentoSerializer(serializers.Serializer):
+    departamento_param = serializers.IntegerField()
+    nombre_departamento = serializers.CharField()
+    total = serializers.IntegerField()
+
 
 class CoordinadorConInstitucionSerializer(serializers.Serializer):
     id_usuario = serializers.IntegerField()
