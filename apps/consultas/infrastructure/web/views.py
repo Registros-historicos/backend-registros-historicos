@@ -276,7 +276,7 @@ class ConsultaViewSet(viewsets.ViewSet):
                 {"error": "El parámetro 'tipo_institucion' debe ser un número entero"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        resultado = instituciones_filtradas_selector(tipo_institucion)
+        resultado = instituciones_filtradas_selector(tipo_institucion, request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
