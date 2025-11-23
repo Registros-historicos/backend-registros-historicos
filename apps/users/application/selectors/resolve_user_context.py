@@ -4,7 +4,8 @@ from django.db.utils import DatabaseError
 def resolve_user_context(id_usuario: int):
     """
     Obtiene datos de contexto del usuario (rol, institución y CEPAT si aplica).
-    Para coordinadores con múltiples instituciones, devuelve una lista de IDs.
+    Para coordinadores con múltiples instituciones, devuelve una lista de IDs
+    en `instituciones` y, si son varias, también `instituciones_count`.
     """
     if not isinstance(id_usuario, int):
         raise ValueError("El parámetro id_usuario debe ser un número entero.")
@@ -35,37 +36,44 @@ def resolve_user_context(id_usuario: int):
             row = cursor.fetchone()
 
             if not row:
-                print(f"⚠️ No se encontró contexto para usuario ID={id_usuario}")
+                print(f"No se encontró contexto para usuario ID={id_usuario}")
                 return None
 
             columns = [col[0] for col in cursor.description]
             context = dict(zip(columns, row))
-            
+
             # Para coordinadores (rol 36), obtener TODAS sus instituciones
             if context.get('rol_id') == 36:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT id_institucion 
                     FROM institucion 
                     WHERE id_usuario = %s
                     ORDER BY id_institucion
-                """, [id_usuario])
-                
-                instituciones = [row[0] for row in cursor.fetchall()]
-                context['instituciones'] = instituciones  # Lista de IDs de instituciones
-                
-                # Actualizar el nombre para mostrar cantidad
-                if len(instituciones) > 1:
-                    context['institucion_nombre'] = f"{len(instituciones)} instituciones"
-                
-                print(f"✅ Coordinador con {len(instituciones)} instituciones: {instituciones}")
-            
+                    """,
+                    [id_usuario],
+                )
+
+                instituciones = [r[0] for r in cursor.fetchall()]
+                context['instituciones'] = instituciones  # lista de IDs
+
+                # Si solo tiene una institución, nos aseguramos de que id_institucion sea esa
+                if len(instituciones) == 1:
+                    context['id_institucion'] = instituciones[0]
+                elif len(instituciones) > 1:
+                    # Añadimos el conteo, PERO NO tocamos institucion_nombre
+                    context['instituciones_count'] = len(instituciones)
+
+                print(f"Coordinador con {len(instituciones)} instituciones: {instituciones}")
+
+            # Limpieza de strings
             for k, v in context.items():
                 if isinstance(v, str):
                     context[k] = v.strip()
 
-            print("✅ Contexto usuario:", context)
+            print("Contexto usuario:", context)
             return context
 
     except (DatabaseError, Exception) as e:
-        print(f"❌ Error al resolver contexto de usuario {id_usuario}: {str(e)}")
+        print(f"Error al resolver contexto de usuario {id_usuario}: {str(e)}")
         return None
