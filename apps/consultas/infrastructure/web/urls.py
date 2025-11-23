@@ -28,6 +28,8 @@ urlpatterns = [
     path('programas-educativos/', ConsultaViewSet.as_view({'get': 'programas_educativos_view'}), name='programas-educativos'),
     path('registros/por-programa/', ConsultaViewSet.as_view({'get': 'registros_por_programa_view'}), name='registros-por-programa'),
     path('coordinadores/por-cepat/', ConsultaViewSet.as_view({'get': 'coordinadores_por_cepat_view'}), name='coordinadores-por-cepat'),
+    path('departamentos/', ConsultaViewSet.as_view({'get': 'departamentos_view'}), name='departamentos'),
+
 
 #   Excel exports endpoints
     path('excel/entidades/top10', ConsultaExcelViewSet.as_view({'get': 'entidades_top10_excel'}), name='excel-entidades-top10'),

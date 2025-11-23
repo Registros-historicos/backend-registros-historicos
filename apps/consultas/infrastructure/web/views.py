@@ -21,6 +21,7 @@ from apps.consultas.application.selectors.records_by_period import registros_por
 from apps.consultas.application.selectors.institutions_filtered_queries import instituciones_filtradas_selector
 from apps.consultas.application.selectors.investigador_por_coordinador import investigadores_por_coordinador_selector
 from apps.consultas.application.selectors.usuarios_por_estados_cepat import usuarios_por_estados_cepat_selector
+from apps.consultas.application.selectors.departments_queries import departamentos_selector
 from apps.consultas.application.selectors.programs_educational_queries import registros_por_programa_educativo_selector
 from apps.consultas.application.selectors.registros_por_programa_selector import registros_por_programa_selector
 from apps.consultas.application.selectors.coordinadores_por_cepat_selector import coordinadores_por_cepat_selector
@@ -39,7 +40,8 @@ from apps.consultas.infrastructure.web.serializer import (
     UsuarioPorEstadoCepatSerializer,
     ProgramaEducativoSerializer,
     RegistrosPorProgramaSerializer,
-    CoordinadorConInstitucionSerializer
+    CoordinadorConInstitucionSerializer,
+    DepartamentoSerializer
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
@@ -87,6 +89,16 @@ class ConsultaViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"])
     def instituciones_top10_view(self, request):
         resultado = instituciones_top10(user=request.user)
+        return Response(resultado, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Conteo de registros por departamento",
+        description="Devuelve la cantidad de registros agrupados por departamento. Admin ve todo, Coordinador ve solo su(s) institución(es).",
+        responses={200: DepartamentoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def departamentos_view(self, request):
+        resultado = departamentos_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
 
     @extend_schema(
@@ -677,3 +689,5 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             file_name="reporte_programas_educativos.xlsx",
                 report_title="REGISTROS POR PROGRAMAS EDUCATIVOS"
         )
+    
+   
