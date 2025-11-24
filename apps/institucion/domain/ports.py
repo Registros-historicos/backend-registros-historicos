@@ -14,3 +14,9 @@ class InstitucionRepositoryPort(Protocol):
         Llama a f_listar_instituciones_con_cepat y devuelve una lista de instituciones.
         """
         ...
+
+    def listar_todas(self) -> List[Institucion]:
+        """
+        Devuelve una lista con TODAS las instituciones.
+        """
+        ...
