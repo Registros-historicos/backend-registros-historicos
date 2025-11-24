@@ -29,6 +29,8 @@ urlpatterns = [
     path('registros/por-programa/', ConsultaViewSet.as_view({'get': 'registros_por_programa_view'}), name='registros-por-programa'),
     path('coordinadores/por-cepat/', ConsultaViewSet.as_view({'get': 'coordinadores_por_cepat_view'}), name='coordinadores-por-cepat'),
     path('departamentos/', ConsultaViewSet.as_view({'get': 'departamentos_view'}), name='departamentos'),
+    path('registros/por-cuerpo-academico/', ConsultaViewSet.as_view({'get': 'registros_por_cuerpo_academico_view'}), name='registros-por-cuerpo-academico'),
+
 
 
 #   Excel exports endpoints
