@@ -97,3 +97,7 @@ class CoordinadorConInstitucionSerializer(serializers.Serializer):
     estatus_param = serializers.IntegerField()
     id_institucion = serializers.IntegerField()
     nombre_institucion = serializers.CharField()
+
+class RegistrosPorCuerpoAcademicoSerializer(serializers.Serializer):
+    nombre_cuerpo_academico = serializers.CharField()
+    total_registros = serializers.IntegerField()

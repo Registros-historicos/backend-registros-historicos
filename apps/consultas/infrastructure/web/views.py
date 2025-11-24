@@ -25,6 +25,8 @@ from apps.consultas.application.selectors.departments_queries import departament
 from apps.consultas.application.selectors.programs_educational_queries import registros_por_programa_educativo_selector
 from apps.consultas.application.selectors.registros_por_programa_selector import registros_por_programa_selector
 from apps.consultas.application.selectors.coordinadores_por_cepat_selector import coordinadores_por_cepat_selector
+from apps.consultas.application.selectors.registros_por_cuerpo_academico_selector import registros_por_cuerpo_academico_selector
+
 from apps.consultas.infrastructure.web.serializer import (
     EntidadTopSerializer,
     CategoriaInvestigadorSerializer,
@@ -41,7 +43,8 @@ from apps.consultas.infrastructure.web.serializer import (
     ProgramaEducativoSerializer,
     RegistrosPorProgramaSerializer,
     CoordinadorConInstitucionSerializer,
-    DepartamentoSerializer
+    DepartamentoSerializer,
+    RegistrosPorCuerpoAcademicoSerializer
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
@@ -333,6 +336,21 @@ class ConsultaViewSet(viewsets.ViewSet):
     def registros_por_programa_view(self, request):
         resultado = registros_por_programa_selector(request.user)
         return Response(resultado, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+        summary="[Coordinador] Conteo de registros por Cuerpo Académico",
+        description="Devuelve la cantidad de registros agrupados por cuerpo académico de la institución del coordinador.",
+        responses={200: RegistrosPorCuerpoAcademicoSerializer(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def registros_por_cuerpo_academico_view(self, request):
+        """
+        Endpoint que retorna el conteo de registros agrupados por cuerpo académico
+        para la institución asociada al coordinador en sesión.
+        """
+        resultado = registros_por_cuerpo_academico_selector(request.user)
+        return Response(resultado, status=status.HTTP_200_OK)
+
 
     @extend_schema(
         summary="[CEPAT] Obtener coordinadores asociados",
