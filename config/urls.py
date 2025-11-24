@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
@@ -37,4 +39,9 @@ urlpatterns = [
     path("api/cepat/", include(("apps.cepat.infrastructure.web.urls", "cepat"), namespace="cepat")),
     path("api/institucion/", include(("apps.institucion.infrastructure.web.urls", "institucion"), namespace="institucion")),
     path("api/investigadores/", include(("apps.investigadores.infrastructure.web.urls", "investigadores"), namespace="investigadores")),
+
+    path('api/upload/', include('apps.uploads.infrastructure.web.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

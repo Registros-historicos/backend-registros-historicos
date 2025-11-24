@@ -1,10 +1,17 @@
 from django.urls import path
 from .views import (
+    list_instituciones_view,
     list_instituciones_con_cepat_view,
     update_institucion_id_cepat_view, update_institucion_id_coordinador_view
 )
 
 urlpatterns = [
+    path(
+        '',
+        list_instituciones_view,
+        name='institucion-list'
+    ),
+
     # GET /api/institucion/con-cepat/
     path(
         'con-cepat/',

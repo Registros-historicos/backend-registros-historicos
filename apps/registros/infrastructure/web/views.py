@@ -66,6 +66,7 @@ class RegistroViewSet(viewsets.ViewSet):
         responses={200: RegistroSerializer},
     )
     def update(self, request, pk=None):
+        print(">>> [update] request.data recibido:", request.data)
         serializer = RegistroSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         registro = update_records(pk, serializer.validated_data)

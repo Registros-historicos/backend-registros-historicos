@@ -8,6 +8,7 @@ from .serializer import InstitucionSerializer, UpdateIdCepatSerializer, UpdateId
 from ...application.selectors.get_all_by_id_cepat import get_institutions_by_id_cepat
 from ...application.selectors.update_id_cepat_by_id_institucion import update_institucion_id_cepat
 from ...application.selectors.update_id_coor_by_institucion import update_institucion_id_coordinador
+from ...application.selectors.get_all_instituciones import get_all_institutions
 
 
 @api_view(['GET'])
@@ -114,3 +115,13 @@ def update_institucion_id_coordinador_view(request, id_institucion: int):
             {"detail": f"Error al actualizar: {e}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_instituciones_view(request):
+    """
+    Lista TODAS las instituciones.
+    """
+    instituciones_list = get_all_institutions(request.user)
+    serializer = InstitucionSerializer(instituciones_list, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

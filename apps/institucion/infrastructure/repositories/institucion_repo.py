@@ -2,7 +2,7 @@ from typing import Optional, List
 from apps.institucion.domain.entities import Institucion
 from apps.institucion.domain.ports import InstitucionRepositoryPort
 from .pg_utils import call_fn_rows
-
+from django.db import connection
 
 class PgInstitucionRepository(InstitucionRepositoryPort):
 
@@ -62,3 +62,26 @@ class PgInstitucionRepository(InstitucionRepositoryPort):
         # La función devuelve SETOF, pero solo esperamos una fila
         institucion_data = rows[0]
         return self._mapear_fila_a_entidad(institucion_data)
+
+    def listar_todas(self) -> List[Institucion]:
+        """
+        Devuelve una lista con TODAS las instituciones usando una consulta SQL
+        equivalente a 'SETOF public.institucion'.
+        """
+        query = """
+            SELECT
+                i.*
+            FROM public.institucion AS i
+            ORDER BY i.nombre;
+        """
+
+        instituciones: List[Institucion] = []
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            columnas = [col[0] for col in cursor.description]
+            for fila in cursor.fetchall():
+                fila_dict = dict(zip(columnas, fila))
+                instituciones.append(self._mapear_fila_a_entidad(fila_dict))
+
+        return instituciones
