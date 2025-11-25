@@ -510,7 +510,7 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Institutos Tecnológicos Federales",
+            sheet_name="Institutos Federales",
             table_name="TablaFederales",
             file_name="reporte_institutos_federales.xlsx",
             report_title="INSTITUCIONES FEDERALES CON MÁS REGISTROS",
