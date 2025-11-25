@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -50,6 +51,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.users.application.services.permissions import HasRole
 import pandas as pd
 from django.http import FileResponse
+from apps.users.application.selectors.get_user_by_email import list_users
 
 
 class ConsultaViewSet(viewsets.ViewSet):
@@ -379,10 +381,12 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             report_title=None,
             add_pie_chart=False,
             chart_labels_col_idx=1,
-            chart_data_col_idx=2
+            chart_data_col_idx=2,
+            request=None
     ):
+        import datetime
+
         try:
-            # 1. Normalización de datos (Igual que antes)
             if hasattr(data_list, "data"):
                 data = data_list.data
             else:
@@ -396,16 +400,27 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             elif isinstance(data, dict):
                 rows = [data]
 
-            # 2. DataFrame y Filtrado (Igual que antes)
             if rows:
                 df = pd.DataFrame(rows)
             else:
                 df = pd.DataFrame([{"Info": "Sin resultados"}])
 
             cols = [c for c in mapping.keys() if c in df.columns]
-            if cols: df = df[cols]
+            if cols:
+                df = df[cols]
 
-            # 3. Generar Excel PASANDO LOS NUEVOS PARÁMETROS
+            correo = getattr(request.user, "correo", None)
+            usuario_info = list_users(correo=correo, user=request.user)
+            nombre_completo = " ".join(
+                filter(None, [
+                    getattr(usuario_info, "nombre", None),
+                    getattr(usuario_info, "ape_pat", None),
+                    getattr(usuario_info, "ape_mat", None)
+                ])
+            ).upper()
+
+            fecha_generacion = datetime.datetime.now().strftime("%d/%m/%Y")
+
             excel_io = dataframe_to_styled_excel_bytes(
                 df,
                 sheet_name=sheet_name,
@@ -414,7 +429,9 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
                 report_title=report_title,
                 add_pie_chart=add_pie_chart,
                 chart_labels_col_idx=chart_labels_col_idx,
-                chart_data_col_idx=chart_data_col_idx
+                chart_data_col_idx=chart_data_col_idx,
+                username=nombre_completo,
+                fecha_generacion=fecha_generacion
             )
 
             response = FileResponse(excel_io, as_attachment=True, filename=file_name)
@@ -424,7 +441,6 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         except Exception as e:
             print(f"Error generando Excel {file_name}: {str(e)}")
             return Response({"error": str(e)}, status=500)
-
 
     @action(detail=False, methods=["get"])
     def entidades_top10_excel(self, request):
@@ -436,10 +452,11 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="TopEntidades",
+            sheet_name="Entidades Federativas",
             table_name="TablaEntidades",
             file_name="reporte_entidades.xlsx",
-            report_title="Top 10 Entidades Federativas"
+            report_title="Top 10 Entidades Federativas",
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -452,10 +469,11 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="TopInstitutos",
+            sheet_name="Instituciones",
             table_name="TablaInstitutos",
             file_name="reporte_top10_instituciones.xlsx",
-            report_title="TOP 10 INSTITUCIONES CON MÁS REGISTROS"
+            report_title="TOP 10 INSTITUCIONES CON MÁS REGISTROS",
+            request=request
         )
 
 
@@ -474,12 +492,15 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             sheet_name="Institutos Descentralizados",
             table_name="TablaDescentralizados",
             file_name="reporte_institutos_descentralizados.xlsx",
-            report_title="INSTITUCIONES DESCENTRALIZADAS CON MÁS REGISTROS"
+            report_title="INSTITUCIONES DESCENTRALIZADAS CON MÁS REGISTROS",
+            request=request
         )
 
     @action(detail=False, methods=["get"])
     def institutos_federales_excel(self, request):
         data = instituciones_filtradas_selector(tipo_institucion=122)
+        if data is None or not isinstance(data, (list, tuple, dict)):
+            data = []
 
         mapping = {
             "institucion_nombre": "Institución",
@@ -489,10 +510,11 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Institutos Federales",
+            sheet_name="Institutos Tecnológicos Federales",
             table_name="TablaFederales",
             file_name="reporte_institutos_federales.xlsx",
-            report_title="INSTITUCIONES FEDERALES CON MÁS REGISTROS"
+            report_title="INSTITUCIONES FEDERALES CON MÁS REGISTROS",
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -507,10 +529,11 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Todos los Institutos",
+            sheet_name="Todas las Instituciones",
             table_name="TablaInstitutos",
             file_name="reporte_todos_los_institutos.xlsx",
-            report_title="TODAS LAS INSTITUCIONES CON REGISTROS"
+            report_title="TODAS LAS INSTITUCIONES CON REGISTROS",
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -530,12 +553,16 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             sheet_name="Sectores Económicos",
             table_name="TablaSectores",
             file_name="reporte_sectores_economicos.xlsx",
-            report_title="SECTORES ECONÓMICOS CON MÁS REGISTROS"
+            report_title="SECTORES ECONÓMICOS CON MÁS REGISTROS",
+            request=request
         )
 
     @action(detail=False, methods=["get"])
     def registros_impi_excel(self, request):
-        data = requests_by_type_selector(44, request.user)  # 44 = tipo IMPI
+        data = requests_by_type_selector(44, request.user)  # posible error si el usuario no tiene datos es problema del quien hizo esta funcion
+        if data is None or not isinstance(data, (list, tuple, dict)):
+            data = []
+
         mapping = {
             "tipo_registro_nombre": "Tipo de Registro",
             "rama_nombre": "Nombre de la Rama",
@@ -544,18 +571,21 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="IMPI",
+            sheet_name="Total de solicitudes IMPI",
             table_name="TablaIMPI",
-            file_name="reporte_impi_.xlsx",
+            file_name="reporte_impi.xlsx",
             report_title="REGISTROS IMPI",
             add_pie_chart=True,
             chart_labels_col_idx=2,
-            chart_data_col_idx=3
+            chart_data_col_idx=3,
+            request=request
         )
 
     @action(detail=False, methods=["get"])
     def registros_indautor_excel(self, request):
-        data = requests_by_type_selector(45, request.user)
+        data = requests_by_type_selector(45, request.user) # posible error si el usuario no tiene datos es problema del quien hizo esta funcion
+        if data is None or not isinstance(data, (list, tuple, dict)):
+            data = []
         mapping = {
             "tipo_registro_nombre": "Tipo de Registro",
             "rama_nombre": "Nombre de la Rama",
@@ -564,13 +594,14 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="INDAUTOR",
+            sheet_name="Total de solicitudes INDAUTOR",
             table_name="TablaINDAUTOR",
             file_name="reporte_indautor.xlsx",
             report_title="REGISTROS INDAUTOR",
             add_pie_chart=True,
             chart_labels_col_idx=2,
-            chart_data_col_idx=3
+            chart_data_col_idx=3,
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -583,13 +614,14 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Ceategorías",
+            sheet_name="Registros Por Ceategorías",
             table_name="TablaCategorías",
             file_name="reporte_categorias.xlsx",
             report_title="REGISTROS POR CATEGORÍA DE INVESTIGADOR",
             add_pie_chart=True,
             chart_labels_col_idx=1,
-            chart_data_col_idx=2
+            chart_data_col_idx=2,
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -602,13 +634,14 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Sexo",
+            sheet_name="Registros Por Sexo",
             table_name="TablaSexo",
             file_name="reporte_investigadores_por_sexo.xlsx",
             report_title="REGISTROS DE INVESTIGADORES POR SEXO",
             add_pie_chart=True,
             chart_labels_col_idx=1,
-            chart_data_col_idx=2
+            chart_data_col_idx=2,
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -621,13 +654,14 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="Estatus",
+            sheet_name="Registros Por Estatus",
             table_name="TablaEstatus",
             file_name="reporte_estatus_registros.xlsx",
             report_title="REPORTE DE REGISTROS POR ESTATUS",
             add_pie_chart=True,
             chart_labels_col_idx=1,
-            chart_data_col_idx=2
+            chart_data_col_idx=2,
+            request=request
         )
 
     @action(detail=False, methods=["get"])
@@ -674,15 +708,29 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
             "concepto": "Mes / Fuente",
             "total": "Total Registros"
         })
+        correo = getattr(request.user, "correo", None)
+        usuario_info = list_users(correo=correo, user=request.user)
+        nombre_completo = " ".join(
+            filter(None, [
+                getattr(usuario_info, "nombre", None),
+                getattr(usuario_info, "ape_pat", None),
+                getattr(usuario_info, "ape_mat", None)
+            ])
+        ).upper()
+        from datetime import datetime
+        fecha_generacion = datetime.now().strftime("%d/%m/%Y")
+
         file_name = f"reporte_registros_por_mes_{year}.xlsx"
         try:
             excel_io = dataframe_to_excel_registros_mes(
                 df,
-                sheet_name=f"Registros {year}",
+                sheet_name=f"Registros por año {year}",
                 table_name=f"TablaRegistros{year}",
                 report_title=f"REPORTE DE REGISTROS DE {year}",
                 chart_labels_col_idx=1,
-                chart_data_col_idx=2
+                chart_data_col_idx=2,
+                username=nombre_completo,
+                fecha_generacion=fecha_generacion
             )
 
             response = FileResponse(excel_io, as_attachment=True, filename=file_name)
@@ -691,6 +739,7 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
 
     @action(detail=False, methods=["get"])
     def registros_por_programas_educativos_excel(self, request):
@@ -702,10 +751,60 @@ class ConsultaExcelViewSet(viewsets.ViewSet):
         return self._generar_respuesta_excel(
             data_list=data,
             mapping=mapping,
-            sheet_name="ProgramasEducativos",
+            sheet_name="Programas Educativos",
             table_name="TablaProgramasEducativos",
             file_name="reporte_programas_educativos.xlsx",
-                report_title="REGISTROS POR PROGRAMAS EDUCATIVOS"
+            report_title="REGISTROS POR PROGRAMAS EDUCATIVOS",
+            request=request
         )
-    
-   
+
+    @action(detail=False, methods=["get"])
+    def regitros_por_cuerpos_academicos_excel(self, request):
+        data = registros_por_cuerpo_academico_selector(request.user)
+        mapping = {
+            "nombre_cuerpo_academico": "Cuerpo Académicos",
+            "total_registros": "Total de registros"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Cuerpos Académicos",
+            table_name="TablaCuerposAcademicos",
+            file_name="reporte_cuerpos_academicos.xlsx",
+            report_title="REGISTROS POR CUERPOS ACADÉMICOS",
+            request=request
+        )
+
+    @action(detail=False, methods=["get"])
+    def departamentos_excel(self, request):
+        data = departamentos_selector(request.user)
+        mapping = {
+            "nombre_departamento": "Departamento",
+            "total": "Total de Registros"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Departamentos",
+            table_name="TablaDepartamentos",
+            file_name="reporte_departamentos.xlsx",
+            report_title="REGISTROS POR DEPARTAMENTOS",
+            request=request
+        )
+
+    def regitros_por_invetigadores_excel(self, request):
+        data = investigadores_por_coordinador_selector(request.user)
+        mapping = {
+            "nombre": "Nombre del Investigador",
+            "departamento": "Departamento",
+            "solicitudes": "Total de solicitudes"
+        }
+        return self._generar_respuesta_excel(
+            data_list=data,
+            mapping=mapping,
+            sheet_name="Investigadores",
+            table_name="TablaInvestigadores",
+            file_name="reporte_investigadores.xlsx",
+            report_title="REGISTROS POR INVESTIGADORES",
+            request=request
+        )
