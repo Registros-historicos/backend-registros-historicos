@@ -47,4 +47,7 @@ urlpatterns = [
     path('excel/registros/estatus', ConsultaExcelViewSet.as_view({'get': 'registros_estatus_excel'}), name='excel-estatus'),
     path('excel/registros/mes/', ConsultaExcelViewSet.as_view({'get': 'registros_por_mes_excel'}), name='registros-por-mes'),
     path('excel/registros/programa/educativo', ConsultaExcelViewSet.as_view({'get': 'registros_por_programas_educativos_excel'}), name='registros-por-programa-educativo'),
+    path('excel/registros/cuerpo/academico', ConsultaExcelViewSet.as_view({'get': 'regitros_por_cuerpos_academicos_excel'}), name='registros-por-cuerpo-academico'),
+    path('excel/registros/departamentos', ConsultaExcelViewSet.as_view({'get': 'departamentos_excel'}), name='registros-departamentos'),
+    path('excel/registros/investigadores', ConsultaExcelViewSet.as_view({'get': 'regitros_por_invetigadores_excel'}), name='registros-por-investigadores'),
 ]
