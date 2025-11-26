@@ -204,7 +204,7 @@ class RegistroViewSet(viewsets.ViewSet):
         print("Hojas a cargar:", hojas)
 
         service = BulkIndautorService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
-        result = service.execute(file, id_usuario, hojas_input=hojas)
+        result = service.execute(file, int(id_usuario), hojas_input=hojas)
 
         print("Resultado de la carga masiva INDAUTOR:", result)
 
@@ -229,7 +229,7 @@ class RegistroViewSet(viewsets.ViewSet):
         print("Hojas a cargar:", hojas)
 
         service = BulkImpiService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
-        result = service.execute(file, id_usuario, hojas_input=hojas)
+        result = service.execute(file, int(id_usuario), hojas_input=hojas)
 
         print("Resultado de la carga masiva IMPI:", result)
 
