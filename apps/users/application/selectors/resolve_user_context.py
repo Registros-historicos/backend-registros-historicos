@@ -60,11 +60,36 @@ def resolve_user_context(id_usuario: int):
                 # Si solo tiene una institución, nos aseguramos de que id_institucion sea esa
                 if len(instituciones) == 1:
                     context['id_institucion'] = instituciones[0]
+
                 elif len(instituciones) > 1:
                     # Añadimos el conteo, PERO NO tocamos institucion_nombre
                     context['instituciones_count'] = len(instituciones)
 
                 print(f"Coordinador con {len(instituciones)} instituciones: {instituciones}")
+            # Para CePaT (rol 37), obtener TODAS las instituciones de su CePaT
+            if context.get('rol_id') == 37:
+                id_cepat = context.get("id_cepat")
+
+                if id_cepat:
+                    cursor.execute(
+                        """
+                        SELECT id_institucion
+                        FROM institucion
+                        WHERE id_cepat = %s
+                        ORDER BY id_institucion
+                        """,
+                        [id_cepat],
+                    )
+                    instituciones = [r[0] for r in cursor.fetchall()]
+                    context['instituciones'] = instituciones
+
+                    # Si solo hay una, también fijamos id_institucion
+                    if len(instituciones) == 1:
+                        context['id_institucion'] = instituciones[0]
+                    else:
+                        context['instituciones_count'] = len(instituciones)
+
+                    print(f"CePaT con {len(instituciones)} instituciones: {instituciones}")
 
             # Limpieza de strings
             for k, v in context.items():
@@ -77,3 +102,42 @@ def resolve_user_context(id_usuario: int):
     except (DatabaseError, Exception) as e:
         print(f"Error al resolver contexto de usuario {id_usuario}: {str(e)}")
         return None
+
+
+def get_instituciones_permitidas(id_usuario: int):
+    """
+    Devuelve la lista de instituciones donde el usuario puede registrar.
+    Regla real:
+      - CePaT (rol 37): muchas instituciones (todas las del CePaT)
+      - Coordinador (rol 36): solo su institución
+      - Otros roles: solo su institución
+    """
+    ctx = resolve_user_context(id_usuario)
+    if not ctx:
+        return []
+
+    rol_id = ctx.get("rol_id")
+    instituciones = ctx.get("instituciones", [])
+    id_institucion = ctx.get("id_institucion")
+    id_cepat = ctx.get("id_cepat")
+    print("ID CePaT:", id_cepat)
+    print("Instituciones del usuario:", instituciones)
+
+    # === CePaT → varias instituciones ===
+    if rol_id == 37 and id_cepat:
+        return instituciones  # esta lista la llena resolve_user_context()
+
+    # === Coordinador → solo 1 institución ===
+    if rol_id == 36:
+        return [id_institucion]
+
+    # === Cualquier otro usuario → solo su institución ===
+    return [id_institucion]
+
+
+def usuario_puede_registrar_en(id_usuario: int, institucion_id: int):
+    """
+    Valida si el usuario tiene permiso de registrar en esa institución.
+    """
+    permitidas = get_instituciones_permitidas(id_usuario)
+    return institucion_id in permitidas

@@ -33,6 +33,9 @@ class BulkIndautorService:
     # 🚀 EJECUCIÓN PRINCIPAL
     # ==========================================================
     def execute(self, file, id_usuario: int, hojas_input: str = None):
+        print("id_usuario:", id_usuario)
+        
+        
         try:
             xls = pd.ExcelFile(file)
         except Exception as e:
@@ -98,6 +101,7 @@ class BulkIndautorService:
 
             try:
                 with transaction.atomic():
+
                     with connection.cursor() as cursor:
                         cursor.callproc("f_carga_masiva_investigador_adscripcion", [
                             curp,
@@ -166,6 +170,30 @@ class BulkIndautorService:
                         pd.to_datetime(row.get("Fecha de Expedición (15)"), errors="coerce")
                         if pd.notna(row.get("Fecha de Expedición (15)")) else None
                     )
+
+                    institucion_origen = self._resolve_institucion_id(
+                        row.get("Tecnologico de Origen (9)")
+                    )
+
+                    from apps.users.application.selectors.resolve_user_context import (
+                        get_instituciones_permitidas
+                    )
+                    permitidas = get_instituciones_permitidas(id_usuario)
+
+                    if institucion_origen not in permitidas:
+                        errores.append({
+                            "hoja": hoja,
+                            "fila": int(index) + int(header_row) + 2,
+                            "expediente": expediente,
+                            "error": (
+                                f"No tienes permiso para registrar en la institución {institucion_origen}. "
+                                f"Permitidas: {permitidas}"
+                            )
+                        })
+                        print(
+                            f"❌ No permitido: usuario={id_usuario} | inst_excel={institucion_origen} | permitidas={permitidas}"
+                        )
+                        continue
 
                     with transaction.atomic():
                         registro_data = {
