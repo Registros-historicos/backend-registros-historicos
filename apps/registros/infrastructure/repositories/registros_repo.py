@@ -54,46 +54,52 @@ class PostgresRegistroRepository(RegistroRepository):
 
             return None
 
+    def limpiar_campo(self, valor):
+        return valor if valor not in ("", None) else None
+
     def actualizar(self, id_registro: int, registro: Registro) -> Registro:
         with transaction.atomic():
             with connection.cursor() as cursor:
-                cursor.execute("""
-                    SELECT f_actualiza_resgistro_por_pk(
-                        %s,  -- 1  id_registro
-                        %s,  -- 3  titulo
-                        %s,  -- 4  tipo_ingreso_param
-                        %s,  -- 5  id_usuario
-                        %s,  -- 6  rama_param
-                        %s,  -- 7  fec_expedicion
-                        %s,  -- 8  observaciones
-                        %s,  -- 9  archivo
-                        %s,  -- 10 estatus_param
-                        %s,  -- 11 medio_ingreso_param
-                        %s,  -- 12 tipo_registro_param
-                        %s,  -- 13 fec_solicitud
-                        %s,  -- 14 descripcion
-                        %s,  -- 16 tecnologico_origen
-                        %s,  -- 17 anio_renovacion
-                        %s   -- 18 id_subsector
+                cursor.execute(
+                    """
+                    SELECT public.f_actualiza_resgistro_por_pk(
+                        %s,  -- p_id_registro (obligatorio)
+                        %s,  -- p_titulo
+                        %s,  -- p_tipo_ingreso_param
+                        %s,  -- p_id_usuario
+                        %s,  -- p_rama_param
+                        %s,  -- p_fec_expedicion
+                        %s,  -- p_observaciones
+                        %s,  -- p_archivo
+                        %s,  -- p_estatus_param
+                        %s,  -- p_medio_ingreso_param
+                        %s,  -- p_tipo_registro_param
+                        %s,  -- p_fec_solicitud
+                        %s,  -- p_descripcion
+                        %s,  -- p_tecnologico_origen
+                        %s,  -- p_anio_renovacion
+                        %s   -- p_id_subsector
                     )
-                """, [
-                    id_registro,
-                    registro.titulo,
-                    registro.tipo_ingreso_param,
-                    registro.id_usuario,
-                    registro.rama_param,
-                    registro.fec_expedicion,
-                    registro.observaciones,
-                    registro.archivo,
-                    registro.estatus_param,
-                    registro.medio_ingreso_param,
-                    registro.tipo_registro_param,
-                    registro.fec_solicitud,
-                    registro.descripcion,
-                    registro.tecnologico_origen,
-                    registro.anio_renovacion,
-                    registro.id_subsector,
-                ])
+                    """,
+                    [
+                        registro.id_registro,
+                        self.limpiar_campo(registro.titulo),
+                        self.limpiar_campo(registro.tipo_ingreso_param),
+                        self.limpiar_campo(registro.id_usuario),
+                        self.limpiar_campo(registro.rama_param),
+                        self.limpiar_campo(registro.fec_expedicion),
+                        self.limpiar_campo(registro.observaciones),
+                        self.limpiar_campo(registro.archivo),
+                        self.limpiar_campo(registro.estatus_param),
+                        self.limpiar_campo(registro.medio_ingreso_param),
+                        self.limpiar_campo(registro.tipo_registro_param),
+                        self.limpiar_campo(registro.fec_solicitud),
+                        self.limpiar_campo(registro.descripcion),
+                        self.limpiar_campo(registro.tecnologico_origen),
+                        self.limpiar_campo(registro.anio_renovacion),
+                        self.limpiar_campo(registro.id_subsector),
+                    ]
+                )
 
                 cursor.execute("SELECT * FROM registro WHERE id_registro = %s", [id_registro])
                 row = cursor.fetchone()
