@@ -42,6 +42,17 @@ def resolve_user_context(id_usuario: int):
             columns = [col[0] for col in cursor.description]
             context = dict(zip(columns, row))
 
+            if context.get('rol_id') == 35:
+                cursor.execute("""
+                    SELECT id_institucion 
+                    FROM institucion 
+                    ORDER BY id_institucion
+                """)
+                instituciones = [r[0] for r in cursor.fetchall()]
+                context['instituciones'] = instituciones
+                context['instituciones_count'] = len(instituciones)
+                print(f"Admin detectado: acceso a {len(instituciones)} instituciones.")
+
             # Para coordinadores (rol 36), obtener TODAS sus instituciones
             if context.get('rol_id') == 36:
                 cursor.execute(
@@ -120,8 +131,7 @@ def get_instituciones_permitidas(id_usuario: int):
     instituciones = ctx.get("instituciones", [])
     id_institucion = ctx.get("id_institucion")
     id_cepat = ctx.get("id_cepat")
-    print("ID CePaT:", id_cepat)
-    print("Instituciones del usuario:", instituciones)
+
 
     # === CePaT → varias instituciones ===
     if rol_id == 37 and id_cepat:
@@ -130,6 +140,9 @@ def get_instituciones_permitidas(id_usuario: int):
     # === Coordinador → solo 1 institución ===
     if rol_id == 36:
         return [id_institucion]
+    
+    if rol_id == 35:
+        return instituciones  # Admin puede todas las instituciones
 
     # === Cualquier otro usuario → solo su institución ===
     return [id_institucion]
