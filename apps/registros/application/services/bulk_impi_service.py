@@ -3,7 +3,11 @@ from django.db import transaction, connection
 from apps.registros.application.selectors.create_record import create_new_record
 from apps.registros.application.selectors.add_investigador_to_registro import add_investigador_to_registro
 from apps.registros.infrastructure.repositories.investigadores_repositorio import PostgresInvestigadorRepository
-
+from apps.users.application.selectors.resolve_user_context import resolve_user_context
+from apps.users.application.selectors.resolve_user_context import (
+    get_instituciones_permitidas,
+    usuario_puede_registrar_en
+)
 
 class BulkImpiService:
     """
@@ -37,7 +41,7 @@ class BulkImpiService:
             xls = pd.ExcelFile(file)
         except Exception as e:
             return {"error": f"Error al leer Excel: {e}"}
-
+        print(f"📄 ID_USUARIO: {id_usuario}")
         print(f"📄 Archivo recibido: {file}")
         print("📄 Hojas disponibles:", xls.sheet_names)
 
@@ -158,6 +162,21 @@ class BulkImpiService:
                 try:
                     fec_solicitud = pd.to_datetime(row.get("Fecha de Solicitud (4)"), errors="coerce")
                     fec_expedicion = pd.to_datetime(row.get("Fecha de Expedición (15)"), errors="coerce")
+                    institucion_origen = self._resolve_institucion_id(row.get("Tecnologico de Origen (8)"))
+
+                    # Obtener instituciones permitidas PARA EL USUARIO
+                    permitidas = get_instituciones_permitidas(id_usuario)
+
+                    # Validación estricta
+                    if institucion_origen not in permitidas:
+                        errores.append({
+                            "hoja": hoja,
+                            "fila": int(index) + int(header_row) + 2,
+                            "expediente": expediente,
+                            "error": f"No tienes permiso para registrar en la institución {institucion_origen} (permitidas: {permitidas})"
+                        })
+                        print(f"❌ Institución no permitida: {institucion_origen} para usuario {id_usuario}")
+                        continue
 
                     with transaction.atomic():
                         registro_data = {
@@ -175,6 +194,7 @@ class BulkImpiService:
                             "tipo_registro_param": 44,
 
                             "institucion_id": self._resolve_institucion_id(row.get("Tecnologico de Origen (8)")),
+                           
                             "cepat_id": self._resolve_cepat_id(row.get("CePat (9)") or row.get("CEPAT (9)")),
 
                             "anio_renovacion": self._to_int(row.get("Año Renovación (10)")),

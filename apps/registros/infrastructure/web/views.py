@@ -67,7 +67,7 @@ class RegistroViewSet(viewsets.ViewSet):
     )
     def update(self, request, pk=None):
         print(">>> [update] request.data recibido:", request.data)
-        serializer = RegistroSerializer(data=request.data)
+        serializer = RegistroSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         registro = update_records(pk, serializer.validated_data)
         return Response(RegistroSerializer(registro).data, status=status.HTTP_200_OK)
@@ -204,7 +204,7 @@ class RegistroViewSet(viewsets.ViewSet):
         print("Hojas a cargar:", hojas)
 
         service = BulkIndautorService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
-        result = service.execute(file, id_usuario, hojas_input=hojas)
+        result = service.execute(file, int(id_usuario), hojas_input=hojas)
 
         print("Resultado de la carga masiva INDAUTOR:", result)
 
@@ -229,7 +229,7 @@ class RegistroViewSet(viewsets.ViewSet):
         print("Hojas a cargar:", hojas)
 
         service = BulkImpiService(PostgresRegistroRepository(), PostgresInvestigadorRepository())
-        result = service.execute(file, id_usuario, hojas_input=hojas)
+        result = service.execute(file, int(id_usuario), hojas_input=hojas)
 
         print("Resultado de la carga masiva IMPI:", result)
 
