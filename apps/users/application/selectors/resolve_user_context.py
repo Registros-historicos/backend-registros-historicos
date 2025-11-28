@@ -132,7 +132,6 @@ def get_instituciones_permitidas(id_usuario: int):
     id_institucion = ctx.get("id_institucion")
     id_cepat = ctx.get("id_cepat")
 
-
     # === CePaT → varias instituciones ===
     if rol_id == 37 and id_cepat:
         return instituciones  # esta lista la llena resolve_user_context()
