@@ -17,11 +17,11 @@ services:
       sh -c "
       python manage.py migrate --noinput &&
       python manage.py collectstatic --noinput || true &&
-      gunicorn config.wsgi:application --bind 0.0.0.0:8000
+      gunicorn config.wsgi:application --bind 0.0.0.0:8001
       "
 
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8001/"]
       interval: 15s
       timeout: 5s
       retries: 10
