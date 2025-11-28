@@ -115,7 +115,8 @@ class RegistroViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        result = list_records(int(tipo), page, limit, filter, order)
+        id_usuario = request.user.id
+        result = list_records(int(tipo), page, limit, filter, order, int(id_usuario))
         return Response(result, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -151,7 +152,8 @@ class RegistroViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        result = search_records(int(tipo), texto, page, limit, filter, order)
+        id_usuario = request.user.id
+        result = search_records(int(tipo), texto, page, limit, filter, order, int(id_usuario))
         return Response(result, status=status.HTTP_200_OK)
     
     @extend_schema(

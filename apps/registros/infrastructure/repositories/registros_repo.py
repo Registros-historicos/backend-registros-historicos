@@ -6,6 +6,8 @@ from django.db import connection, transaction
 from apps.registros.infrastructure.repositories.pg_utils import run_query
 from datetime import datetime, date
 
+from apps.users.application.selectors.resolve_user_context import resolve_user_context
+
 class PostgresRegistroRepository(RegistroRepository):
 
     def insertar(self, registro: Registro) -> dict:
@@ -154,47 +156,242 @@ class PostgresRegistroRepository(RegistroRepository):
             id_subsector=row[17],
         )
 
-    def listar_por_tipo(self, tipo_registro_param: int, limit: int, offset: int, filter: str, order: str) -> list[dict]:
-        """ Lista registros por tipo con paginación """
+
+
+    def listar_por_tipo(self,  tipo_registro_param: int,
+                        limit: int, offset: int, sort_column: str, sort_order: str, id_usuario: int,) -> list[dict]:
+        """
+        Lista registros por tipo tomando en cuenta el ROL:
+        - Rol 37 (CePaT): filtra por CEPA(T)
+        - Rol 36 (Coordinador): filtra por institución asignada
+        - Otros roles: función global sin filtros
+        """
+
+        # OBTENER CONTEXTO DEL USUARIO
+        ctx = resolve_user_context(id_usuario)
+        if not ctx:
+            raise ValueError("No se pudo resolver el contexto del usuario")
+
+        rol = ctx.get("rol_id")
+        id_institucion = ctx.get("id_institucion")
+        id_cepat = ctx.get("id_cepat")
+
+        sort_column = sort_column or "fec_solicitud"
+        sort_order = sort_order or "DESC"
+
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT *
-                FROM f_busca_registros_por_tipo(%s, %s, %s, %s, %s)
-            """, [tipo_registro_param, limit, offset, filter, order])
+
+            if rol == 37 and id_cepat:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM f_busca_registros_por_tipo_y_cepat(%s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        tipo_registro_param,
+                        id_cepat,
+                        limit,
+                        offset,
+                        sort_column,
+                        sort_order
+                    ]
+                )
+
+            elif rol == 36 and id_institucion:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM f_busca_registros_por_tipo_y_institucion(%s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        tipo_registro_param,
+                        id_institucion,
+                        limit,
+                        offset,
+                        sort_column,
+                        sort_order
+                    ]
+                )
+
+            else:
+                cursor.execute(
+                    """
+                    SELECT *
+                    FROM f_busca_registros_por_tipo(%s, %s, %s, %s, %s)
+                    """,
+                    [
+                        tipo_registro_param,
+                        limit,
+                        offset,
+                        sort_column,
+                        sort_order
+                    ]
+                )
+
+            # Convertir resultados a dict
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    def contar_por_tipo(self, tipo_registro_param: int, id_usuario: int = None) -> int:
+        """
+        Cuenta registros por tipo según el rol del usuario:
+        - Admin (35): global
+        - CePaT (37): filtra por CEPA
+        - Coordinador (36): filtra por instituciones asignadas
+        """
+        # Resolver contexto
+        ctx = resolve_user_context(id_usuario) if id_usuario else None
+        if not ctx:
+            raise ValueError("No se pudo resolver el contexto del usuario")
+
+        rol = ctx.get("rol_id")
+        id_cepat = ctx.get("id_cepat")
+        instituciones = ctx.get("instituciones")  # lista []
         
-    def contar_por_tipo(self, tipo_registro_param: int) -> int:
-        """ Cuenta total de registros por tipo """
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT f_cuenta_registros_por_tipo(%s)
-            """, [tipo_registro_param])
+
+            if rol == 35:
+                cursor.execute(
+                    """SELECT * FROM f_cuenta_registros_por_tipo(%s)""",
+                    [tipo_registro_param]
+                )
+                rows = cursor.fetchall()
+                return sum(row[-1] for row in rows)
+
+            if rol == 37 and id_cepat:
+                cursor.execute(
+                    """SELECT * FROM f_cuenta_registros_por_tipo_cepat(%s, %s)""",
+                    [tipo_registro_param, id_cepat]
+                )
+                rows = cursor.fetchall()
+                return sum(row[-1] for row in rows)
+
+            # ➤ COORDINADOR → lista de instituciones asociadas
+            if rol == 36 and instituciones:
+                cursor.execute(
+                    """SELECT * FROM f_cuenta_registros_por_tipo_instituciones(%s, %s)""",
+                    [tipo_registro_param, instituciones]
+                )
+                rows = cursor.fetchall()
+                return sum(row[-1] for row in rows)
+
+            # ➤ Cualquier otro rol → global
+            cursor.execute(
+                """SELECT * FROM f_cuenta_registros_por_tipo(%s)""",
+                [tipo_registro_param]
+            )
             rows = cursor.fetchall()
-            total = sum(int(row[-1].strip('()').split(',')[-1]) for row in rows)
-
-            return total
-
+            return sum(row[-1] for row in rows)
             
-    def buscar_por_texto(self, tipo_registro_param: int, texto: str, limit: int, offset: int, filter: str, order: str) -> list[dict]:
-        """ Busca registros por texto con paginación """
+    def buscar_por_texto(self, tipo_registro_param: int, texto: str,
+                        limit: int, offset: int, sort_column: str,
+                        sort_order: str, id_usuario: int) -> list[dict]:
+
+        # Resolver contexto
+        ctx = resolve_user_context(id_usuario)
+        if not ctx:
+            raise ValueError("No se pudo resolver el contexto del usuario")
+
+        rol = ctx.get("rol_id")
+        id_cepat = ctx.get("id_cepat")
+        id_institucion = ctx.get("id_institucion")
+
         with connection.cursor() as cursor:
-            print(tipo_registro_param, texto, limit, offset, filter, order)
-            cursor.execute("""
-                SELECT *
-                FROM f_busca_registros_por_texto(%s, %s, %s, %s, %s, %s)
-            """, [tipo_registro_param, texto, limit, offset, filter, order])
+
+            # --- 🔵 CePaT ---
+            if rol == 37 and id_cepat:
+                cursor.execute("""
+                    SELECT *
+                    FROM f_busca_registros_por_texto_y_cepat(%s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    tipo_registro_param,
+                    texto,
+                    id_cepat,
+                    limit,
+                    offset,
+                    sort_column,
+                    sort_order
+                ])
+
+            # --- 🟢 Coordinador ---
+            elif rol == 36 and id_institucion:
+                cursor.execute("""
+                    SELECT *
+                    FROM f_busca_registros_por_texto_y_institucion(%s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    tipo_registro_param,
+                    texto,
+                    id_institucion,
+                    limit,
+                    offset,
+                    sort_column,
+                    sort_order
+                ])
+
+            # --- 🔴 Admin / global ---
+            else:
+                cursor.execute("""
+                    SELECT *
+                    FROM f_busca_registros_por_texto(%s, %s, %s, %s, %s, %s)
+                """, [
+                    tipo_registro_param,
+                    texto,
+                    limit,
+                    offset,
+                    sort_column,
+                    sort_order
+                ])
+
             columns = [col[0] for col in cursor.description]
             return [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    def contar_por_texto(self, tipo_registro_param: int, texto: str) -> int:
-        """ Cuenta registros que coinciden con el texto """
+
+
+
+    def contar_por_texto(self, tipo_registro_param: int, texto: str, id_usuario: int) -> int:
+        """Cuenta registros que coinciden con el texto considerando el ROL del usuario."""
+
+        # Resolver contexto del usuario
+        ctx = resolve_user_context(id_usuario)
+        if not ctx:
+            raise ValueError("No se pudo resolver el contexto del usuario")
+
+        rol = ctx.get("rol_id")
+        id_cepat = ctx.get("id_cepat")
+        id_institucion = ctx.get("id_institucion")
+
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT f_contar_registros_por_texto(%s, %s)
-            """, [tipo_registro_param, texto])
-            return cursor.fetchone()[0] or 0
-        
+
+            # --- 🔵 CePaT ---
+            if rol == 37 and id_cepat:
+                cursor.execute(
+                    """
+                    SELECT f_contar_registros_por_texto_y_cepat(%s, %s, %s)
+                    """,
+                    [tipo_registro_param, texto, id_cepat]
+                )
+                return cursor.fetchone()[0] or 0
+
+            # --- 🟢 Coordinador ---
+            elif rol == 36 and id_institucion:
+                cursor.execute(
+                    """
+                    SELECT f_contar_registros_por_texto_y_institucion(%s, %s, %s)
+                    """,
+                    [tipo_registro_param, texto, id_institucion]
+                )
+                return cursor.fetchone()[0] or 0
+
+            # --- 🔴 Admin u otros roles (global) ---
+            else:
+                cursor.execute(
+                    """
+                    SELECT f_contar_registros_por_texto(%s, %s)
+                    """,
+                    [tipo_registro_param, texto]
+                )
+                return cursor.fetchone()[0] or 0
+
+
     def obtener_por_id(self, id_registro: int) -> Optional[dict]:
         """ Obtiene un registro por su ID """
         with connection.cursor() as cursor:
