@@ -42,8 +42,8 @@ class AuthService:
             "estatus": u.get("estatus"),
             "nombre": u.get("nombre"),
         }
-        access, exp_access = self._issue(claims, minutes=60)  
-        refresh, exp_refresh = self._issue({"sub": claims["sub"]}, minutes=30)
+        access, exp_access = self._issue(claims, minutes=60*24)  
+        refresh, exp_refresh = self._issue({"sub": claims["sub"]}, minutes=60*2)
 
         safe_user = {
             "id_usuario": u.get("id_usuario"),

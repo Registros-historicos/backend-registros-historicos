@@ -212,8 +212,8 @@ class BulkIndautorService:
                             "tecnologico_origen": str(row.get("Tecnologico de Origen (9)", "")).strip(),
 
                             # 🔹 Fijos
-                            "tipo_ingreso_param": 44,
-                            "tipo_registro_param": 44,
+                            "tipo_ingreso_param": 45,
+                            "tipo_registro_param": 45,
 
                             # 🔹 Resto de datos
                             "anio_renovacion": self._to_int(row.get("Año renovación (10)")),
