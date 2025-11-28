@@ -266,7 +266,6 @@ class PostgresRegistroRepository(RegistroRepository):
                 rows = cursor.fetchall()
                 return sum(row[-1] for row in rows)
 
-            # ➤ COORDINADOR → lista de instituciones asociadas
             if rol == 36 and instituciones:
                 cursor.execute(
                     """SELECT * FROM f_cuenta_registros_por_tipo_instituciones(%s, %s)""",
@@ -275,14 +274,13 @@ class PostgresRegistroRepository(RegistroRepository):
                 rows = cursor.fetchall()
                 return sum(row[-1] for row in rows)
 
-            # ➤ Cualquier otro rol → global
             cursor.execute(
                 """SELECT * FROM f_cuenta_registros_por_tipo(%s)""",
                 [tipo_registro_param]
             )
             rows = cursor.fetchall()
             return sum(row[-1] for row in rows)
-            
+
     def buscar_por_texto(self, tipo_registro_param: int, texto: str,
                         limit: int, offset: int, sort_column: str,
                         sort_order: str, id_usuario: int) -> list[dict]:
@@ -298,7 +296,6 @@ class PostgresRegistroRepository(RegistroRepository):
 
         with connection.cursor() as cursor:
 
-            # --- 🔵 CePaT ---
             if rol == 37 and id_cepat:
                 cursor.execute("""
                     SELECT *
@@ -313,7 +310,6 @@ class PostgresRegistroRepository(RegistroRepository):
                     sort_order
                 ])
 
-            # --- 🟢 Coordinador ---
             elif rol == 36 and id_institucion:
                 cursor.execute("""
                     SELECT *
@@ -328,7 +324,6 @@ class PostgresRegistroRepository(RegistroRepository):
                     sort_order
                 ])
 
-            # --- 🔴 Admin / global ---
             else:
                 cursor.execute("""
                     SELECT *
@@ -361,7 +356,6 @@ class PostgresRegistroRepository(RegistroRepository):
 
         with connection.cursor() as cursor:
 
-            # --- 🔵 CePaT ---
             if rol == 37 and id_cepat:
                 cursor.execute(
                     """
@@ -371,7 +365,6 @@ class PostgresRegistroRepository(RegistroRepository):
                 )
                 return cursor.fetchone()[0] or 0
 
-            # --- 🟢 Coordinador ---
             elif rol == 36 and id_institucion:
                 cursor.execute(
                     """
@@ -381,7 +374,6 @@ class PostgresRegistroRepository(RegistroRepository):
                 )
                 return cursor.fetchone()[0] or 0
 
-            # --- 🔴 Admin u otros roles (global) ---
             else:
                 cursor.execute(
                     """
