@@ -11,4 +11,10 @@ urlpatterns = [
     path('investigadores/detail/', InvestigadorViewSet.as_view({'get': 'get_investigador_detail_view'})),
     path('adscripciones/create/', InvestigadorViewSet.as_view({'post': 'create_adscripcion'})),
     path('adscripciones/by-investigador/', InvestigadorViewSet.as_view({'get': 'get_adscripciones'})),
+
+    path('investigadores/curps/', InvestigadorViewSet.as_view({'get': 'list_investigadores_curps'}), name='lista_investigadores_curps'),
+
+
 ]
+
+
