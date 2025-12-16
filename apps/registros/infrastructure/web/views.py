@@ -50,6 +50,7 @@ class RegistroViewSet(viewsets.ViewSet):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+
     @extend_schema(
         summary="Crear registro",
         responses={200: RegistroSerializer},
