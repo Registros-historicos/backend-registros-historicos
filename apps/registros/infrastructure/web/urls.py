@@ -19,6 +19,10 @@ urlpatterns = [
         'post': 'vincular_investigador'
     }), name='vincular_investigador'),
 
+    path('desvincular-investigador/', RegistroViewSet.as_view({
+        'post': 'desvincular_investigador'
+    }), name='desvincular_investigador'),
+
     path('<int:pk>/', RegistroViewSet.as_view({
         'get': 'retrieve',
         'put': 'update'
@@ -27,10 +31,9 @@ urlpatterns = [
     path('<int:pk>/disable', RegistroViewSet.as_view({'patch': 'disable'}), name='estatus_deshabilitar'),
     path('<int:pk>/enable', RegistroViewSet.as_view({'patch': 'enable'}), name='estatus_habilitar'),
 
-   path('indautor-bulk/', RegistroViewSet.as_view({'post': 'indautor_bulk'}), name='carga_masiva_indautor'),
+    path('indautor-bulk/', RegistroViewSet.as_view({'post': 'indautor_bulk'}), name='carga_masiva_indautor'),
     path('impi-bulk/', RegistroViewSet.as_view({'post': 'impi_bulk'}), name='carga_masiva_impi'),
 
     path('download/plantilla/indautor/', RegistroViewSet.as_view({'get': 'descargar_indautor'}), name='descargar_indautor'),
     path('download/plantilla/impi/', RegistroViewSet.as_view({'get': 'descargar_impi'}), name='descargar_impi'),
 ]
-
