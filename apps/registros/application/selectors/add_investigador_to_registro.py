@@ -58,3 +58,53 @@ def add_investigador_to_registro(curp: str, investigador_data: dict, no_expedien
             }
         }
     }
+
+
+def remove_investigador_from_registro(curp: str, no_expediente: str):
+    """
+    Desvincula un investigador existente (por CURP) de un registro.
+    
+    Args:
+        curp: CURP del investigador a desvincular
+        no_expediente: Número de expediente del registro
+        
+    Returns:
+        dict: Diccionario con información de la desvinculación exitosa
+        None: Si no se encontró el investigador o el registro
+    """
+    # Buscar investigador por CURP
+    investigador = repo_investigador.get_by_curp(curp)
+    if not investigador:
+        print(f"⚠️ CURP {curp} no encontrado, no se puede desvincular.")
+        return None
+
+    # Buscar registro por expediente
+    registro = repo_registro.get_by_expediente(no_expediente)
+    if not registro:
+        print(f"⚠️ Registro con expediente {no_expediente} no encontrado.")
+        return None
+
+    # Obtener IDs para la desvinculación
+    id_investigador = investigador["id_investigador"]
+    id_registro = registro["id_registro"]
+    
+    # Desvincular investigador del registro
+    repo_registro.desvincular_investigador(id_registro, id_investigador)
+    print(f"✅ Desvinculado investigador {id_investigador} ← registro {id_registro}")
+    
+    # Retornar información de la desvinculación exitosa
+    return {
+        "success": True,
+        "message": "Investigador desvinculado exitosamente",
+        "data": {
+            "id_investigador": id_investigador,
+            "id_registro": id_registro,
+            "curp": curp,
+            "no_expediente": no_expediente,
+            "investigador": {
+                "nombre": investigador.get("nombre"),
+                "apellido_paterno": investigador.get("apellido_paterno"),
+                "apellido_materno": investigador.get("apellido_materno")
+            }
+        }
+    }
