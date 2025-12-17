@@ -492,6 +492,16 @@ class PostgresRegistroRepository(RegistroRepository):
         """
         run_query(query, [id_registro, id_investigador])
 
+    def desvincular_investigador(self, id_registro: int, id_investigador: int):
+        """
+        Elimina la relación entre registro e investigador (por id_investigador).
+        """
+        query = """
+            DELETE FROM registro_investigador
+            WHERE id_registro = %s AND id_investigador = %s;
+        """
+        run_query(query, [id_registro, id_investigador])
+
     def obtener_investigadores_por_registro(self, id_registro: int):
         query = """
             SELECT DISTINCT ON (i.id_investigador)

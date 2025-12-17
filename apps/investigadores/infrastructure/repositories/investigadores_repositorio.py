@@ -52,3 +52,12 @@ class PostgresInvestigadorRepository:
             ON CONFLICT DO NOTHING;
         """
         run_query(query, adscripcion_data)
+
+    def desvincular_adscripcion(self, id_investigador: int):
+        """Desvincula (elimina) la adscripción activa de un investigador."""
+        query = """
+            DELETE FROM adscripcion
+            WHERE id_investigador = %s
+              AND fec_fin IS NULL;
+        """
+        run_query(query, [id_investigador])
