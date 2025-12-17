@@ -15,6 +15,10 @@ urlpatterns = [
         'get': 'by_expediente'
     }), name='registro_por_expediente'),
 
+    path('vincular-investigador/', RegistroViewSet.as_view({
+        'post': 'vincular_investigador'
+    }), name='vincular_investigador'),
+
     path('<int:pk>/', RegistroViewSet.as_view({
         'get': 'retrieve',
         'put': 'update'
