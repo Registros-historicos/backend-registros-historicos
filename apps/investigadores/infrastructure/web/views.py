@@ -16,6 +16,7 @@ from apps.investigadores.application.selectors.get_investigadores import get_all
 from apps.investigadores.application.selectors.get_investigador_detail import get_investigador_detail
 from apps.investigadores.application.selectors.get_adscripciones import get_adscripciones_by_investigador
 from apps.investigadores.infrastructure.repositories.investigador_repository import InvestigadorRepository
+from apps.investigadores.application.services.list_investigador import ListInvestigadorService
 
 repo = InvestigadorRepository()
 
@@ -195,3 +196,28 @@ class InvestigadorViewSet(viewsets.ViewSet):
         adscripciones = get_adscripciones_by_investigador(id_investigador)
         serializer = AdscripcionSerializer(adscripciones, many=True)
         return Response(serializer.data, status=200)
+
+
+
+    # INVESTIGADORESS
+    @extend_schema(
+        summary="Listar todos los investigadores",
+        responses={200},
+    )
+    @action(detail=False, methods=["get"], url_path="investigadores")
+    def list_investigadores(self, request):
+        service = ListInvestigadorService()
+        investigadores = service.list_all()
+        return Response(investigadores, status=status.HTTP_200_OK)
+
+
+    @extend_schema(
+        summary="Listar todas las CURP de investigadores",
+        responses={200},
+    )
+    @action(detail=False, methods=["get"], url_path="investigadores/curps")
+    def list_investigadores_curps(self, request):
+        service = ListInvestigadorService()
+        curps = service.list_curps()
+        return Response(curps, status=status.HTTP_200_OK)
+    
