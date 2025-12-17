@@ -23,6 +23,7 @@ from ...application.selectors.search_records import search_records
 from ...application.selectors.get_record_by_id import get_record_by_id
 from ...application.selectors.get_record_by_expediente import get_record_by_expediente
 from ...application.selectors.get_investigadores_by_registro import get_investigadores_by_registro
+from ...application.selectors.add_investigador_to_registro import add_investigador_to_registro
 
 from apps.registros.application.services.bulk_indautor_service import BulkIndautorService
 from apps.registros.application.services.bulk_impi_service import BulkImpiService
@@ -169,7 +170,7 @@ class RegistroViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # 🔹 Nuevo: obtener investigadores asociados
+        # Nuevo: obtener investigadores asociados
         investigadores = get_investigadores_by_registro(int(pk))
         print(">>> investigadores:", investigadores)
         registro["investigadores"] = investigadores
@@ -178,19 +179,80 @@ class RegistroViewSet(viewsets.ViewSet):
 
         return Response(registro, status=status.HTTP_200_OK)
     
-    @extend_schema(
-        summary="Obtener registro por número de expediente",
-        responses={200: RegistroListSerializer, 404: {"description": "No encontrado"}},
-    )
-    @action(detail=False, methods=["get"], url_path="expediente/(?P<no_expediente>[^/.]+)")
-    def by_expediente(self, request, no_expediente=None):
-        registro = get_record_by_expediente(no_expediente)
-        if not registro:
+@extend_schema(
+    summary="Vincular investigador existente a un registro",
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "curp": {"type": "string", "description": "CURP del investigador"},
+                "no_expediente": {"type": "string", "description": "Número de expediente del registro"},
+                "investigador_data": {"type": "object", "description": "Datos adicionales (opcional)"}
+            },
+            "required": ["curp", "no_expediente"]
+        }
+    },
+    responses={
+        200: {"description": "Vinculación exitosa"},
+        400: {"description": "Datos inválidos"},
+        404: {"description": "Investigador o registro no encontrado"}
+    },
+)
+@action(detail=False, methods=["post"], url_path="vincular-investigador")
+def vincular_investigador(self, request):
+    """
+    Vincula un investigador existente (por CURP) a un registro específico.
+    """
+    curp = request.data.get("curp")
+    no_expediente = request.data.get("no_expediente")
+    investigador_data = request.data.get("investigador_data", {})
+
+    # Validar campos requeridos
+    if not curp or not no_expediente:
+        return Response(
+            {
+                "error": "Campos requeridos faltantes",
+                "details": {
+                    "curp": "Campo requerido" if not curp else None,
+                    "no_expediente": "Campo requerido" if not no_expediente else None
+                }
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # Ejecutar la vinculación
+        result = add_investigador_to_registro(curp, investigador_data, no_expediente)
+        
+        if not result:
             return Response(
-                {"error": "Registro no encontrado."},
+                {
+                    "error": "No se pudo vincular",
+                    "message": "El investigador o el registro no fueron encontrados"
+                },
                 status=status.HTTP_404_NOT_FOUND
             )
-        return Response(registro, status=status.HTTP_200_OK)
+
+        return Response(result, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error al vincular investigador: {str(e)}")
+        return Response(
+            {
+                "error": "Error al vincular investigador",
+                "message": str(e)
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
+@action(detail=False, methods=["post"], url_path="vincular-investigador")
+def vincular_investigador(self, request):
+    """
+    Vincula un investigador existente (por CURP) a un registro específico.
+    """
+    curp = request.data.get("curp")
+    no_expediente = request.data.get("no_expediente")
+    investigador_data = request.data.get("investigador_data", {})
 
 
     @extend_schema(summary="Carga masiva INDAUTOR desde Excel (multi-hojas)")
