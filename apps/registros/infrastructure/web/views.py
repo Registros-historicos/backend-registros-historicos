@@ -23,7 +23,7 @@ from ...application.selectors.search_records import search_records
 from ...application.selectors.get_record_by_id import get_record_by_id
 from ...application.selectors.get_record_by_expediente import get_record_by_expediente
 from ...application.selectors.get_investigadores_by_registro import get_investigadores_by_registro
-from ...application.selectors.add_investigador_to_registro import add_investigador_to_registro
+from ...application.selectors.add_investigador_to_registro import add_investigador_to_registro, remove_investigador_from_registro
 
 from apps.registros.application.services.bulk_indautor_service import BulkIndautorService
 from apps.registros.application.services.bulk_impi_service import BulkImpiService
@@ -244,7 +244,70 @@ class RegistroViewSet(viewsets.ViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+    
+    @extend_schema(
+        summary="Desvincular investigador de un registro",
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "curp": {"type": "string", "description": "CURP del investigador"},
+                    "no_expediente": {"type": "string", "description": "Número de expediente del registro"}
+                },
+                "required": ["curp", "no_expediente"]
+            }
+        },
+        responses={
+            200: {"description": "Desvinculación exitosa"},
+            400: {"description": "Datos inválidos"},
+            404: {"description": "Investigador o registro no encontrado"}
+        },
+    )
+    @action(detail=False, methods=["post"], url_path="desvincular-investigador")
+    def desvincular_investigador(self, request):
+        """
+        Desvincula un investigador existente (por CURP) de un registro específico.
+        """
+        curp = request.data.get("curp")
+        no_expediente = request.data.get("no_expediente")
+
+        # Validar campos requeridos
+        if not curp or not no_expediente:
+            return Response(
+                {
+                    "error": "Campos requeridos faltantes",
+                    "details": {
+                        "curp": "Campo requerido" if not curp else None,
+                        "no_expediente": "Campo requerido" if not no_expediente else None
+                    }
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Ejecutar la desvinculación
+            result = remove_investigador_from_registro(curp, no_expediente)
             
+            if not result:
+                return Response(
+                    {
+                        "error": "No se pudo desvincular",
+                        "message": "El investigador o el registro no fueron encontrados"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            return Response(result, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Error al desvincular investigador: {str(e)}")
+            return Response(
+                {
+                    "error": "Error al desvincular investigador",
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
     @extend_schema(summary="Carga masiva INDAUTOR desde Excel (multi-hojas)")
